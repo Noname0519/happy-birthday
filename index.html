@@ -1,17 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>🎂 宝可梦生日快乐</title>
+    <title>🎨 Pastel Dibujado 3D</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Segoe UI', 'Poppins', sans-serif;
-            background: #0a0a2a;
-        }
-        /* 信息覆盖层 */
+        body { margin: 0; overflow: hidden; font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif; background: #fcf9f2; }
         #info {
             position: absolute;
             top: 20px;
@@ -20,54 +14,47 @@
             text-align: center;
             pointer-events: none;
             z-index: 10;
-            color: #fff;
-            text-shadow: 0 0 20px rgba(255, 200, 50, 0.8), 0 0 40px rgba(255, 100, 0, 0.5);
             padding: 0 16px;
             box-sizing: border-box;
         }
         #info h1 {
-            font-size: clamp(2.2rem, 8vw, 4rem);
+            font-size: clamp(2.5rem, 9vw, 4.5rem);
             margin: 0;
-            letter-spacing: 4px;
-            background: linear-gradient(135deg, #feda75, #ffb347, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: glow 2s infinite alternate;
+            color: #2c3e50;
+            text-shadow: 4px 4px 0 #f1c40f, 6px 6px 0 rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            font-weight: 900;
         }
         #info p {
-            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-size: clamp(1rem, 3vw, 1.6rem);
             margin: 8px 0 0;
-            opacity: 0.9;
-            color: #fff8e0;
-            letter-spacing: 2px;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.6);
+            display: inline-block;
+            padding: 4px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            border: 2px dashed #2c3e50;
         }
-        @keyframes glow {
-            0% { filter: drop-shadow(0 0 10px rgba(255, 200, 100, 0.3)); }
-            100% { filter: drop-shadow(0 0 30px rgba(255, 200, 100, 0.9)); }
-        }
-
-        /* 右下角小标签 */
         #credit {
             position: absolute;
             bottom: 16px;
             right: 20px;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8rem;
+            color: rgba(44, 62, 80, 0.3);
+            font-size: 0.9rem;
             z-index: 10;
             pointer-events: none;
-            letter-spacing: 1px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-
     <div id="info">
-        <h1>✨ 生日快乐 ✨</h1>
-        <p>🎈 愿你像皮卡丘一样永远电力十足 🎈</p>
+        <h1>✏️ ¡Feliz Cumple! ✏️</h1>
+        <p>🎨 Coloreado a mano con mucho cariño 🎨</p>
     </div>
-    <div id="credit">⚡ Pikachu · 3D Cake</div>
+    <div id="credit">✧ Estilo Boceto</div>
 
-    <!-- 引入 Three.js 核心库和扩展 -->
     <script type="importmap">
         {
             "imports": {
@@ -78,25 +65,19 @@
     </script>
 
     <script type="module">
-        // ============================================================
-        // 1. 导入 Three.js 模块
-        // ============================================================
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-        // ============================================================
-        // 2. 场景 / 相机 / 渲染器
-        // ============================================================
+        // --- Escena (fondo color papel) ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a2a);
+        scene.background = new THREE.Color(0xfcf9f2);
 
-        // 相机
+        // --- Cámara ---
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(5, 4, 8);
+        camera.position.set(4, 3.5, 7);
         camera.lookAt(0, 1.5, 0);
 
-        // WebGL 渲染器
+        // --- Renderer ---
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
@@ -104,453 +85,194 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.appendChild(renderer.domElement);
 
-        // 辅助轨道控制（可让用户自由视角，但为了自动旋转我们稍后禁用）
-        // 如果不希望用户控制，可以注释掉
+        // --- Controles ---
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 1.5, 0);
         controls.enableDamping = true;
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 2.0;
+        controls.autoRotateSpeed = 1.2;
         controls.enableZoom = true;
-        controls.maxPolarAngle = Math.PI / 2.2;
 
-        // ============================================================
-        // 3. 灯光
-        // ============================================================
-        // 环境光
-        const ambient = new THREE.AmbientLight(0x404060);
+        // --- Luces (muy planas para que parezca dibujo) ---
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambient);
-
-        // 主光
-        const mainLight = new THREE.DirectionalLight(0xffeedd, 1);
-        mainLight.position.set(3, 8, 5);
-        mainLight.castShadow = true;
-        mainLight.shadow.mapSize.width = 1024;
-        mainLight.shadow.mapSize.height = 1024;
-        scene.add(mainLight);
-
-        // 补光
-        const fillLight = new THREE.DirectionalLight(0x4488ff, 0.4);
-        fillLight.position.set(-3, 2, -4);
-        scene.add(fillLight);
-
-        // 底光
-        const backLight = new THREE.PointLight(0xffaa44, 0.3);
-        backLight.position.set(0, 1, -5);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(1, 2, 1);
+        scene.add(dirLight);
+        const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+        backLight.position.set(-1, 0.5, -1);
         scene.add(backLight);
 
-        // 火焰光（动态）
-        const flameLight = new THREE.PointLight(0xff6600, 1.5, 8);
-        flameLight.position.set(0, 3.2, 0);
-        scene.add(flameLight);
-
-        // ============================================================
-        // 4. 地面（半透明发光圆盘）
-        // ============================================================
-        const groundGeometry = new THREE.CircleGeometry(3.5, 32);
-        const groundMaterial = new THREE.MeshStandardMaterial({
-            color: 0x1a1a4e,
-            emissive: 0x222266,
-            emissiveIntensity: 0.3,
+        // --- Suelo (estilo papel) ---
+        const groundMat = new THREE.MeshStandardMaterial({
+            color: 0xf0ece1,
+            roughness: 1,
+            metalness: 0,
             transparent: true,
-            opacity: 0.6,
-            side: THREE.DoubleSide
+            opacity: 0.4
         });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        const ground = new THREE.Mesh(new THREE.CircleGeometry(3.5, 32), groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -0.05;
-        ground.receiveShadow = true;
+        ground.receiveShadow = false;
         scene.add(ground);
 
-        // 添加一些闪烁小点在地面
-        const dotGeometry = new THREE.BufferGeometry();
-        const dotCount = 200;
-        const dotPositions = new Float32Array(dotCount * 3);
-        for (let i = 0; i < dotCount; i++) {
-            const r = 2.5 + Math.random() * 1.5;
-            const theta = Math.random() * Math.PI * 2;
-            dotPositions[i * 3] = Math.cos(theta) * r;
-            dotPositions[i * 3 + 1] = 0.01;
-            dotPositions[i * 3 + 2] = Math.sin(theta) * r;
+        // --- FUNCIÓN para crear piezas CON BORDES NEGROS ---
+        function createOutlinedMesh(geometry, material, posX, posY, posZ, rotX = 0, rotY = 0, rotZ = 0) {
+            const group = new THREE.Group();
+            
+            // Malla rellena
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            
+            // Bordes negros (líneas)
+            const edges = new THREE.EdgesGeometry(geometry);
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x1a1a1a, linewidth: 2 });
+            const wireframe = new THREE.LineSegments(edges, lineMat);
+            
+            group.add(mesh);
+            group.add(wireframe);
+            
+            group.position.set(posX, posY, posZ);
+            group.rotation.set(rotX, rotY, rotZ);
+            return group;
         }
-        dotGeometry.setAttribute('position', new THREE.BufferAttribute(dotPositions, 3));
-        const dotMaterial = new THREE.PointsMaterial({
-            color: 0x88aaff,
-            size: 0.08,
-            transparent: true,
-            opacity: 0.6
-        });
-        const dots = new THREE.Points(dotGeometry, dotMaterial);
-        scene.add(dots);
 
-        // ============================================================
-        // 5. 蛋糕主体（三层圆柱 + 奶油装饰）
-        // ============================================================
+        // --- Pastel (colores primarios / vivos para colorear) ---
         const cakeGroup = new THREE.Group();
-
-        // 层颜色（宝可梦主题：黄、红、白）
-        const colors = [0xffcb05, 0xee1515, 0xf5f5f5]; // 皮卡丘黄、精灵球红、奶油白
+        const colors = [0xe74c3c, 0xf1c40f, 0x3498db]; // Rojo, Amarillo, Azul
         const heights = [0.8, 0.7, 0.6];
         const radii = [1.5, 1.3, 1.1];
 
-        // 每一层
         for (let i = 0; i < 3; i++) {
-            const geometry = new THREE.CylinderGeometry(radii[i], radii[i], heights[i], 32);
-            const material = new THREE.MeshStandardMaterial({
+            const geo = new THREE.CylinderGeometry(radii[i], radii[i], heights[i], 24);
+            const mat = new THREE.MeshToonMaterial({
                 color: colors[i],
-                roughness: 0.3,
-                metalness: 0.1,
-                emissive: i === 0 ? new THREE.Color(0xffaa00).multiplyScalar(0.2) : 0x000000,
+                roughness: 0.6,
+                flatShading: false
             });
-            const layer = new THREE.Mesh(geometry, material);
-            layer.castShadow = true;
-            layer.receiveShadow = true;
-            // 从下往上堆叠
+            
             let yPos = 0;
-            for (let j = 0; j < i; j++) {
-                yPos += heights[j];
-            }
-            layer.position.y = yPos + heights[i] / 2;
-            cakeGroup.add(layer);
+            for (let j = 0; j < i; j++) yPos += heights[j];
+            const yCenter = yPos + heights[i] / 2;
+            
+            const layerGroup = createOutlinedMesh(geo, mat, 0, yCenter, 0);
+            cakeGroup.add(layerGroup);
 
-            // 在每层顶部加一圈奶油小球（装饰）
-            const creamCount = 12;
+            // Cremas (con bordes también)
+            const creamCount = 10;
             for (let k = 0; k < creamCount; k++) {
                 const angle = (k / creamCount) * Math.PI * 2;
                 const radius = radii[i] * 0.85;
-                const creamBall = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.08 + (i === 2 ? 0.1 : 0.06), 8),
-                    new THREE.MeshStandardMaterial({
-                        color: i === 2 ? 0xffaa66 : 0xfff5e6,
-                        emissive: i === 2 ? 0xff6600 : 0x000000,
-                        emissiveIntensity: 0.2,
-                        roughness: 0.2
-                    })
-                );
-                creamBall.position.set(
+                const creamGeo = new THREE.SphereGeometry(0.08 + (i === 2 ? 0.12 : 0.07), 8);
+                const creamMat = new THREE.MeshToonMaterial({ color: 0xffffff, roughness: 0.8 });
+                const creamGroup = createOutlinedMesh(
+                    creamGeo, creamMat,
                     Math.cos(angle) * radius,
                     yPos + heights[i] - 0.02,
                     Math.sin(angle) * radius
                 );
-                creamBall.castShadow = true;
-                creamBall.receiveShadow = true;
-                cakeGroup.add(creamBall);
+                cakeGroup.add(creamGroup);
             }
         }
-
-        // 顶部装饰：精灵球（红色半球 + 白色半球 + 按钮）
-        function createPokeBall(posX, posY, posZ, scale = 0.3) {
-            const group = new THREE.Group();
-
-            // 下半球（白色）
-            const bottomHalf = new THREE.Mesh(
-                new THREE.SphereGeometry(0.4, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2),
-                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
-            );
-            bottomHalf.rotation.x = Math.PI;
-            bottomHalf.position.y = -0.4;
-
-            // 上半球（红色）
-            const topHalf = new THREE.Mesh(
-                new THREE.SphereGeometry(0.4, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2),
-                new THREE.MeshStandardMaterial({ color: 0xee1515, roughness: 0.3 })
-            );
-            topHalf.position.y = 0.4;
-
-            // 中间环（黑色）
-            const ring = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.41, 0.41, 0.06, 20),
-                new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 })
-            );
-            ring.position.y = 0;
-
-            // 中心按钮（白色小圆）
-            const button = new THREE.Mesh(
-                new THREE.CircleGeometry(0.12, 16),
-                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, emissive: 0x4488ff, emissiveIntensity: 0.1 })
-            );
-            button.position.set(0, 0, 0.41);
-            button.rotation.x = Math.PI / 2;
-
-            group.add(bottomHalf);
-            group.add(topHalf);
-            group.add(ring);
-            group.add(button);
-
-            group.scale.set(scale, scale, scale);
-            group.position.set(posX, posY, posZ);
-            return group;
-        }
-
-        // 在蛋糕顶部放一个精灵球
-        const pokeBall = createPokeBall(0, 2.2, 0.8, 0.45);
-        cakeGroup.add(pokeBall);
-
-        // 再放两个小精灵球在侧边
-        const ball2 = createPokeBall(-0.8, 1.9, -0.7, 0.25);
-        cakeGroup.add(ball2);
-        const ball3 = createPokeBall(0.9, 1.7, -0.9, 0.25);
-        cakeGroup.add(ball3);
-
         scene.add(cakeGroup);
 
-        // ============================================================
-        // 6. 蜡烛（细长柱 + 火焰粒子）
-        // ============================================================
-        const candleGroup = new THREE.Group();
+        // --- Decoraciones dibujadas (estrellas y bolitas) ---
+        const decoMat = new THREE.MeshToonMaterial({ color: 0x2ecc71, roughness: 0.5 });
+        const decoGeo = new THREE.SphereGeometry(0.18, 6);
+        const deco1 = createOutlinedMesh(decoGeo, decoMat, 0.7, 2.15, 0.7);
+        scene.add(deco1);
+        const deco2 = createOutlinedMesh(decoGeo, decoMat, -0.7, 2.1, -0.7);
+        scene.add(deco2);
+        
+        // Corazón simple (usamos un cono + esfera, pero para simplificar, otra esfera rosa)
+        const heartMat = new THREE.MeshToonMaterial({ color: 0xe91e63 });
+        const heartGroup = createOutlinedMesh(new THREE.SphereGeometry(0.15, 6), heartMat, 0, 2.2, -0.9);
+        scene.add(heartGroup);
 
-        // 蜡烛主体
-        const candleMat = new THREE.MeshStandardMaterial({
-            color: 0xffaa66,
-            emissive: 0xff4400,
-            emissiveIntensity: 0.2,
-            roughness: 0.4
-        });
-        const candleCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.8, 12), candleMat);
-        candleCylinder.position.y = 2.4; // 放在顶层上方
-        candleCylinder.castShadow = true;
-        candleCylinder.receiveShadow = true;
-        candleGroup.add(candleCylinder);
+        // --- Vela (con líneas negras) ---
+        const candleMat = new THREE.MeshToonMaterial({ color: 0x9b59b6, roughness: 0.5 });
+        const candleGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8);
+        const candleGroup = createOutlinedMesh(candleGeo, candleMat, 0, 2.4, 0);
+        scene.add(candleGroup);
 
-        // 蜡烛条纹（装饰）
+        // Rayas de la vela (con bordes)
         for (let i = 0; i < 3; i++) {
-            const stripe = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.19, 0.19, 0.04, 12),
-                new THREE.MeshStandardMaterial({ color: 0xffdd99, emissive: 0xff8800, emissiveIntensity: 0.1 })
-            );
-            stripe.position.y = 2.1 + i * 0.25;
-            candleGroup.add(stripe);
+            const stripeMat = new THREE.MeshToonMaterial({ color: 0xf1c40f });
+            const stripeGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.05, 8);
+            const stripeGroup = createOutlinedMesh(stripeGeo, stripeMat, 0, 2.1 + i * 0.25, 0);
+            scene.add(stripeGroup);
         }
 
-        // 火焰 (使用粒子系统和点光源)
+        // --- Llama (dibujada, con bordes) ---
         const flameGroup = new THREE.Group();
         flameGroup.position.set(0, 2.85, 0);
 
-        // 外焰（半透明光晕）
-        const glowMat = new THREE.SpriteMaterial({
-            map: createGlowTexture(),
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            opacity: 0.7
-        });
-        const glowSprite = new THREE.Sprite(glowMat);
-        glowSprite.scale.set(0.6, 0.8, 1);
-        flameGroup.add(glowSprite);
+        // Llama exterior (cono redondeado)
+        const flameMat = new THREE.MeshToonMaterial({ color: 0xf39c12, emissive: 0xf39c12, emissiveIntensity: 0.1 });
+        const flameGeo = new THREE.ConeGeometry(0.2, 0.4, 8);
+        const flameMesh = createOutlinedMesh(flameGeo, flameMat, 0, 0.2, 0);
+        flameGroup.add(flameMesh);
 
-        // 内焰（更亮）
-        const innerGlowMat = new THREE.SpriteMaterial({
-            map: createGlowTexture(),
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            color: 0xffaa44,
-            opacity: 0.9
-        });
-        const innerGlow = new THREE.Sprite(innerGlowMat);
-        innerGlow.scale.set(0.3, 0.4, 1);
-        flameGroup.add(innerGlow);
+        // Llama interior (más pequeña)
+        const flameMat2 = new THREE.MeshToonMaterial({ color: 0xe67e22, emissive: 0xe67e22, emissiveIntensity: 0.1 });
+        const flameGeo2 = new THREE.ConeGeometry(0.1, 0.25, 8);
+        const flameMesh2 = createOutlinedMesh(flameGeo2, flameMat2, 0, 0.3, 0);
+        flameGroup.add(flameMesh2);
 
-        // 粒子火焰（动态）
-        const particleCount = 30;
-        const particleGeo = new THREE.BufferGeometry();
-        const particlePos = new Float32Array(particleCount * 3);
-        for (let i = 0; i < particleCount; i++) {
-            particlePos[i * 3] = (Math.random() - 0.5) * 0.2;
-            particlePos[i * 3 + 1] = Math.random() * 0.5;
-            particlePos[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
-        }
-        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-        const particleMat = new THREE.PointsMaterial({
-            color: 0xff8800,
-            size: 0.04,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-        });
-        const particles = new THREE.Points(particleGeo, particleMat);
-        flameGroup.add(particles);
+        scene.add(flameGroup);
 
-        candleGroup.add(flameGroup);
-        scene.add(candleGroup);
-
-        // 辅助函数生成圆形渐变纹理
-        function createGlowTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(255, 255, 200, 1)');
-            gradient.addColorStop(0.2, 'rgba(255, 200, 100, 1)');
-            gradient.addColorStop(0.6, 'rgba(255, 100, 20, 0.6)');
-            gradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 64, 64);
-            const texture = new THREE.CanvasTexture(canvas);
-            return texture;
-        }
-
-        // ============================================================
-        // 7. 漂浮的宝可梦元素（精灵球、星星）
-        // ============================================================
-        const floatingGroup = new THREE.Group();
-
-        // 生成一些旋转的精灵球（围绕蛋糕）
-        const ballCount = 6;
-        for (let i = 0; i < ballCount; i++) {
-            const ball = createPokeBall(0, 0, 0, 0.2);
-            const angle = (i / ballCount) * Math.PI * 2;
-            const radius = 2.6;
-            ball.position.set(Math.cos(angle) * radius, 1.0 + Math.random() * 1.5, Math.sin(angle) * radius);
-            ball.userData = { angle: angle, radius: radius, speed: 0.5 + Math.random() * 0.3, heightOffset: Math.random() * 2 };
-            floatingGroup.add(ball);
-        }
-
-        // 星星
-        const starMat = new THREE.SpriteMaterial({
-            map: createStarTexture(),
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            color: 0xffdd44,
-        });
-        for (let i = 0; i < 40; i++) {
-            const star = new THREE.Sprite(starMat);
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            const r = 3 + Math.random() * 4;
-            star.position.set(
-                r * Math.sin(phi) * Math.cos(theta),
-                Math.random() * 5,
-                r * Math.sin(phi) * Math.sin(theta)
+        // --- Estrellitas flotantes (también con bordes) ---
+        const starGroup = new THREE.Group();
+        for (let i = 0; i < 25; i++) {
+            const size = 0.06 + Math.random() * 0.1;
+            const starMat = new THREE.MeshToonMaterial({ 
+                color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6) 
+            });
+            const starGeo = new THREE.OctahedronGeometry(size);
+            const sGroup = createOutlinedMesh(
+                starGeo, starMat,
+                (Math.random() - 0.5) * 6,
+                Math.random() * 4,
+                (Math.random() - 0.5) * 6
             );
-            star.scale.set(0.1 + Math.random() * 0.2, 0.1 + Math.random() * 0.2, 1);
-            star.userData = { rotSpeed: 0.5 + Math.random() * 1 };
-            floatingGroup.add(star);
+            sGroup.userData = { speed: 0.2 + Math.random() * 0.3, angle: Math.random() * Math.PI * 2 };
+            starGroup.add(sGroup);
         }
+        scene.add(starGroup);
 
-        scene.add(floatingGroup);
-
-        function createStarTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 32;
-            canvas.height = 32;
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, 32, 32);
-            ctx.shadowBlur = 10;
-            // 绘制四角星
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            const points = 4;
-            const outer = 14;
-            const inner = 6;
-            for (let i = 0; i < points * 2; i++) {
-                const radius = i % 2 === 0 ? outer : inner;
-                const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
-                const x = 16 + radius * Math.cos(angle);
-                const y = 16 + radius * Math.sin(angle);
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-            ctx.fill();
-            return new THREE.CanvasTexture(canvas);
-        }
-
-        // ============================================================
-        // 8. 粒子背景（闪烁星星）
-        // ============================================================
-        const bgStarCount = 300;
-        const bgStarGeo = new THREE.BufferGeometry();
-        const bgStarPos = new Float32Array(bgStarCount * 3);
-        for (let i = 0; i < bgStarCount; i++) {
-            const r = 15 + Math.random() * 20;
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            bgStarPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-            bgStarPos[i * 3 + 1] = r * Math.cos(phi);
-            bgStarPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-        }
-        bgStarGeo.setAttribute('position', new THREE.BufferAttribute(bgStarPos, 3));
-        const bgStarMat = new THREE.PointsMaterial({
-            color: 0x88aaff,
-            size: 0.15,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending,
-        });
-        const bgStars = new THREE.Points(bgStarGeo, bgStarMat);
-        scene.add(bgStars);
-
-        // ============================================================
-        // 9. 动画循环 & 自动旋转
-        // ============================================================
-        let clock = new THREE.Clock();
-
+        // --- Animación ---
+        const clock = new THREE.Clock();
         function animate() {
             const delta = clock.getDelta();
-            const elapsedTime = performance.now() / 1000;
-
-            // 自动旋转
             controls.update();
 
-            // 火焰闪烁
+            // Parpadeo y escala de la llama (manteniendo los bordes)
             const flicker = 0.9 + Math.random() * 0.2;
-            flameLight.intensity = 1.0 + Math.random() * 0.8;
-            flameGroup.scale.set(flicker, 1 + Math.random() * 0.1, flicker);
-            // 粒子更新
-            const positions = particles.geometry.attributes.position.array;
-            for (let i = 0; i < particleCount; i++) {
-                positions[i * 3 + 1] += delta * 0.2 + Math.random() * 0.01;
-                if (positions[i * 3 + 1] > 0.6) {
-                    positions[i * 3 + 1] = 0;
-                    positions[i * 3] = (Math.random() - 0.5) * 0.2;
-                    positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
-                }
-            }
-            particles.geometry.attributes.position.needsUpdate = true;
+            flameGroup.scale.set(flicker, 1 + Math.random() * 0.15, flicker);
 
-            // 浮动精灵球旋转和上下浮动
-            floatingGroup.children.forEach((child, index) => {
-                if (child.userData.angle !== undefined) {
-                    // 旋转
-                    child.userData.angle += delta * child.userData.speed;
-                    const x = Math.cos(child.userData.angle) * child.userData.radius;
-                    const z = Math.sin(child.userData.angle) * child.userData.radius;
-                    child.position.x = x;
-                    child.position.z = z;
-                    child.position.y = 1.0 + Math.sin(elapsedTime * 0.5 + index) * 0.3 + 0.5;
-                    // 自转
-                    child.rotation.y += delta * 0.5;
-                } else if (child.isSprite) {
-                    // 星星闪烁
-                    const scale = 0.1 + Math.sin(elapsedTime * child.userData.rotSpeed + index) * 0.05;
-                    child.scale.set(scale, scale, 1);
-                }
+            // Rotación de estrellas
+            starGroup.children.forEach(child => {
+                child.rotation.x += delta * child.userData.speed;
+                child.rotation.y += delta * child.userData.speed * 0.5;
             });
 
-            // 渲染
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
-
         animate();
 
-        // ============================================================
-        // 10. 窗口自适应
-        // ============================================================
-        window.addEventListener('resize', onWindowResize, false);
-        function onWindowResize() {
+        // --- Responsive ---
+        window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        // 如果设备是移动端，稍微调整相机
+        });
         if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-            camera.position.set(4, 3, 6);
+            camera.position.set(3.5, 2.5, 5.5);
             controls.target.set(0, 1.2, 0);
         }
-
-        // 提示用户可交互（可选）
-        console.log('🎂 宝可梦生日蛋糕 3D！拖动视角查看~');
     </script>
 </body>
 </html>
