@@ -1,1017 +1,556 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Happy Birthday ♡</title>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=ZCOOL+KuaiLe&display=swap');
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,.8), transparent 30%),
-        radial-gradient(circle at 80% 30%, rgba(255,220,225,.45), transparent 28%),
-        #fffaf3;
-      color: #5b4a4a;
-      font-family: "Patrick Hand", "ZCOOL KuaiLe", sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* =========================
-       Background decoration
-    ========================= */
-
-    .background {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 0;
-    }
-
-    .star,
-    .heart,
-    .dot {
-      position: absolute;
-      opacity: .55;
-      animation: float 5s ease-in-out infinite;
-    }
-
-    .star {
-      font-size: 22px;
-    }
-
-    .heart {
-      font-size: 20px;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #f4a6b5;
-    }
-
-    .s1 { left: 8%; top: 15%; animation-delay: 0s; }
-    .s2 { left: 18%; top: 68%; animation-delay: 1s; }
-    .s3 { right: 12%; top: 20%; animation-delay: 2s; }
-    .s4 { right: 20%; top: 70%; animation-delay: .5s; }
-    .s5 { left: 50%; top: 10%; animation-delay: 1.5s; }
-
-    .h1 { left: 10%; top: 42%; animation-delay: .8s; }
-    .h2 { right: 10%; top: 45%; animation-delay: 2s; }
-    .h3 { right: 25%; top: 10%; animation-delay: 1s; }
-
-    .d1 { left: 27%; top: 22%; }
-    .d2 { right: 30%; top: 30%; }
-    .d3 { left: 14%; top: 82%; }
-    .d4 { right: 13%; top: 82%; }
-
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0) rotate(-4deg);
-      }
-
-      50% {
-        transform: translateY(-12px) rotate(5deg);
-      }
-    }
-
-    /* =========================
-       Main
-    ========================= */
-
-    main {
-      position: relative;
-      z-index: 1;
-      width: min(1100px, 94%);
-      margin: auto;
-      padding: 55px 0 80px;
-      text-align: center;
-    }
-
-    /* =========================
-       Header
-    ========================= */
-
-    .title-small {
-      font-size: 20px;
-      letter-spacing: 5px;
-      color: #b18a8a;
-      margin-bottom: 8px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(58px, 10vw, 110px);
-      line-height: .9;
-      color: #e895a6;
-      text-shadow:
-        2px 2px 0 #fff,
-        4px 4px 0 rgba(232,149,166,.15);
-      transform: rotate(-2deg);
-    }
-
-    .subtitle {
-      margin: 22px auto 0;
-      font-size: 22px;
-      color: #826b6b;
-      max-width: 600px;
-    }
-
-    /* =========================
-       Main illustration
-    ========================= */
-
-    .scene {
-      position: relative;
-      margin: 40px auto 0;
-      width: min(900px, 100%);
-      min-height: 600px;
-    }
-
-    .cake-area {
-      position: absolute;
-      left: 50%;
-      bottom: 30px;
-      transform: translateX(-50%);
-      width: min(430px, 70vw);
-    }
-
-    /* cake shadow */
-
-    .cake-shadow {
-      width: 100%;
-      height: 35px;
-      background: rgba(110,80,80,.08);
-      border-radius: 50%;
-      margin-top: -4px;
-    }
-
-    /* cake */
-
-    .cake {
-      position: relative;
-      margin: auto;
-      width: 90%;
-    }
-
-    .cake-top {
-      position: relative;
-      height: 90px;
-      background: #fff6ef;
-      border: 4px solid #674d4d;
-      border-radius: 50%;
-      z-index: 3;
-    }
-
-    .cake-top::after {
-      content: "";
-      position: absolute;
-      inset: 18px 35px;
-      border: 3px dashed #f2a6b5;
-      border-radius: 50%;
-    }
-
-    .cake-body {
-      position: relative;
-      margin: -35px auto 0;
-      width: 94%;
-      height: 155px;
-      background: #ffdce2;
-      border: 4px solid #674d4d;
-      border-top: none;
-      border-radius: 0 0 35px 35px;
-      z-index: 2;
-      overflow: hidden;
-    }
-
-    .cream {
-      position: absolute;
-      top: 0;
-      left: -5%;
-      width: 110%;
-      height: 48px;
-      background: #fff8ef;
-      border-bottom: 4px solid #674d4d;
-      border-radius: 0 0 50% 50%;
-    }
-
-    .cream::before,
-    .cream::after {
-      content: "";
-      position: absolute;
-      bottom: -18px;
-      width: 30px;
-      height: 30px;
-      background: #fff8ef;
-      border-radius: 50%;
-      border: 4px solid #674d4d;
-    }
-
-    .cream::before {
-      left: 25%;
-    }
-
-    .cream::after {
-      right: 25%;
-    }
-
-    .berry {
-      position: absolute;
-      width: 15px;
-      height: 15px;
-      background: #e98b9e;
-      border: 3px solid #674d4d;
-      border-radius: 50%;
-    }
-
-    .b1 { left: 18%; top: 75px; }
-    .b2 { left: 38%; top: 110px; }
-    .b3 { right: 25%; top: 80px; }
-    .b4 { right: 12%; top: 120px; }
-
-    .cake-bottom {
-      width: 100%;
-      height: 28px;
-      margin-top: -3px;
-      background: #fff6ef;
-      border: 4px solid #674d4d;
-      border-radius: 50%;
-      position: relative;
-      z-index: 4;
-    }
-
-    /* =========================
-       Candles
-    ========================= */
-
-    .candles {
-      position: absolute;
-      left: 50%;
-      top: -105px;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 28px;
-      z-index: 10;
-    }
-
-    .candle {
-      position: relative;
-      width: 22px;
-      height: 92px;
-      background:
-        repeating-linear-gradient(
-          -45deg,
-          #f4a5b6 0,
-          #f4a5b6 7px,
-          #fff5ee 7px,
-          #fff5ee 14px
-        );
-      border: 3px solid #674d4d;
-      border-radius: 5px 5px 3px 3px;
-    }
-
-    .wick {
-      position: absolute;
-      width: 3px;
-      height: 12px;
-      background: #674d4d;
-      top: -13px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .flame {
-      position: absolute;
-      left: 50%;
-      top: -46px;
-      width: 23px;
-      height: 34px;
-      transform: translateX(-50%) scale(0);
-      transform-origin: bottom center;
-      opacity: 0;
-      transition: .25s;
-    }
-
-    .flame::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: #ffc95d;
-      border: 3px solid #674d4d;
-      border-radius: 55% 45% 55% 45%;
-      transform: rotate(8deg);
-    }
-
-    .flame::after {
-      content: "";
-      position: absolute;
-      width: 9px;
-      height: 15px;
-      background: #fff8d8;
-      border-radius: 50%;
-      left: 7px;
-      top: 10px;
-    }
-
-    .candle.lit .flame {
-      transform: translateX(-50%) scale(1);
-      opacity: 1;
-      animation: flame 0.7s ease-in-out infinite alternate;
-    }
-
-    @keyframes flame {
-      from {
-        transform: translateX(-50%) scale(1) rotate(-3deg);
-      }
-      to {
-        transform: translateX(-50%) scale(1.08) rotate(4deg);
-      }
-    }
-
-    /* =========================
-       Pokémon line art
-    ========================= */
-
-    .pokemon {
-      position: absolute;
-      width: 210px;
-      height: 230px;
-      filter: drop-shadow(0 5px 0 rgba(80,50,50,.04));
-      animation: pokemonFloat 4s ease-in-out infinite;
-    }
-
-    .pokemon svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    .pokemon path,
-    .pokemon circle,
-    .pokemon ellipse,
-    .pokemon line,
-    .pokemon polyline {
-      fill: #fffaf3;
-      stroke: #674d4d;
-      stroke-width: 4;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .pokemon .detail {
-      fill: none;
-    }
-
-    .pokemon .black {
-      fill: #674d4d;
-      stroke: none;
-    }
-
-    .pikachu {
-      left: 2%;
-      bottom: 80px;
-      transform: rotate(-5deg);
-    }
-
-    .eevee {
-      right: 2%;
-      bottom: 65px;
-      transform: rotate(5deg);
-      animation-delay: 1s;
-    }
-
-    .jiggly {
-      left: 8%;
-      top: 35px;
-      width: 150px;
-      height: 160px;
-      animation-delay: 1.5s;
-    }
-
-    .snorlax {
-      right: 8%;
-      top: 30px;
-      width: 180px;
-      height: 170px;
-      animation-delay: .7s;
-    }
-
-    @keyframes pokemonFloat {
-      0%, 100% {
-        margin-top: 0;
-      }
-
-      50% {
-        margin-top: -10px;
-      }
-    }
-
-    /* =========================
-       Wish button
-    ========================= */
-
-    .wish-button {
-      position: relative;
-      z-index: 20;
-      margin-top: 25px;
-      padding: 14px 30px;
-      border: 3px solid #674d4d;
-      border-radius: 999px;
-      background: #ffdce2;
-      color: #674d4d;
-      font-family: inherit;
-      font-size: 22px;
-      cursor: pointer;
-      transition: .2s;
-      box-shadow: 0 5px 0 #dca2ad;
-    }
-
-    .wish-button:hover {
-      transform: translateY(-3px);
-    }
-
-    .wish-button:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #dca2ad;
-    }
-
-    /* =========================
-       Message card
-    ========================= */
-
-    .message {
-      width: min(680px, 94%);
-      margin: 55px auto 0;
-      padding: 35px 30px;
-      background: rgba(255,255,255,.65);
-      border: 3px solid #674d4d;
-      border-radius: 25px;
-      position: relative;
-      box-shadow: 7px 7px 0 rgba(103,77,77,.08);
-    }
-
-    .message::before {
-      content: "♡";
-      position: absolute;
-      right: 20px;
-      top: -25px;
-      font-size: 48px;
-      color: #ed9bac;
-      transform: rotate(15deg);
-    }
-
-    .message h2 {
-      margin: 0 0 15px;
-      font-size: 34px;
-      color: #e48d9e;
-    }
-
-    .message p {
-      margin: 8px 0;
-      font-size: 21px;
-      line-height: 1.7;
-    }
-
-    .signature {
-      margin-top: 22px !important;
-      color: #a17c7c;
-    }
-
-    /* =========================
-       Confetti
-    ========================= */
-
-    .confetti {
-      position: fixed;
-      width: 9px;
-      height: 18px;
-      top: -30px;
-      z-index: 100;
-      pointer-events: none;
-      animation: fall linear forwards;
-    }
-
-    @keyframes fall {
-      to {
-        transform:
-          translateY(110vh)
-          rotate(720deg);
-        opacity: 0;
-      }
-    }
-
-    /* =========================
-       Mobile
-    ========================= */
-
-    @media (max-width: 700px) {
-
-      main {
-        padding-top: 35px;
-      }
-
-      h1 {
-        font-size: 65px;
-      }
-
-      .subtitle {
-        font-size: 18px;
-      }
-
-      .scene {
-        min-height: 500px;
-      }
-
-      .cake-area {
-        width: 320px;
-        bottom: 40px;
-      }
-
-      .pokemon {
-        transform: scale(.65);
-      }
-
-      .pikachu {
-        left: -40px;
-        bottom: 45px;
-      }
-
-      .eevee {
-        right: -40px;
-        bottom: 40px;
-      }
-
-      .jiggly {
-        left: -25px;
-        top: 10px;
-      }
-
-      .snorlax {
-        right: -30px;
-        top: 5px;
-      }
-
-      .candles {
-        gap: 17px;
-      }
-
-      .message {
-        margin-top: 30px;
-        padding: 28px 20px;
-      }
-
-      .message h2 {
-        font-size: 28px;
-      }
-
-      .message p {
-        font-size: 18px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🎂 宝可梦生日快乐</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Poppins', sans-serif;
+            background: #0a0a2a;
+        }
+        /* 信息覆盖层 */
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 200, 50, 0.8), 0 0 40px rgba(255, 100, 0, 0.5);
+            padding: 0 16px;
+            box-sizing: border-box;
+        }
+        #info h1 {
+            font-size: clamp(2.2rem, 8vw, 4rem);
+            margin: 0;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #feda75, #ffb347, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s infinite alternate;
+        }
+        #info p {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            margin: 8px 0 0;
+            opacity: 0.9;
+            color: #fff8e0;
+            letter-spacing: 2px;
+        }
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 10px rgba(255, 200, 100, 0.3)); }
+            100% { filter: drop-shadow(0 0 30px rgba(255, 200, 100, 0.9)); }
+        }
+
+        /* 右下角小标签 */
+        #credit {
+            position: absolute;
+            bottom: 16px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            z-index: 10;
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
-
 <body>
 
-  <!-- Background -->
-  <div class="background">
-    <div class="star s1">✦</div>
-    <div class="star s2">☆</div>
-    <div class="star s3">✦</div>
-    <div class="star s4">☆</div>
-    <div class="star s5">✧</div>
-
-    <div class="heart h1">♡</div>
-    <div class="heart h2">♥</div>
-    <div class="heart h3">♡</div>
-
-    <div class="dot d1"></div>
-    <div class="dot d2"></div>
-    <div class="dot d3"></div>
-    <div class="dot d4"></div>
-  </div>
-
-
-  <main>
-
-    <div class="title-small">
-      A LITTLE CELEBRATION FOR YOU
+    <div id="info">
+        <h1>✨ 生日快乐 ✨</h1>
+        <p>🎈 愿你像皮卡丘一样永远电力十足 🎈</p>
     </div>
-
-    <h1>Happy<br>Birthday!</h1>
-
-    <p class="subtitle">
-      今天的所有星星，都偷偷跑来为你庆祝啦 ✦
-    </p>
-
-
-    <!-- =========================
-         Illustration Scene
-    ========================== -->
-
-    <section class="scene">
-
-      <!-- Jigglypuff -->
-      <div class="pokemon jiggly">
-        <svg viewBox="0 0 180 170">
-
-          <!-- body -->
-          <circle cx="90" cy="90" r="55"/>
-
-          <!-- ears -->
-          <polyline points="50,50 35,20 65,35"/>
-          <polyline points="130,50 145,20 115,35"/>
-
-          <!-- eyes -->
-          <ellipse cx="70" cy="88" rx="8" ry="13"/>
-          <ellipse cx="110" cy="88" rx="8" ry="13"/>
-
-          <circle class="black" cx="70" cy="90" r="3"/>
-          <circle class="black" cx="110" cy="90" r="3"/>
-
-          <!-- mouth -->
-          <path class="detail"
-                d="M82 110 Q90 118 98 110"/>
-
-          <!-- cheeks -->
-          <circle cx="48" cy="105" r="8"/>
-          <circle cx="132" cy="105" r="8"/>
-
-          <!-- curl -->
-          <path class="detail"
-                d="M90 42 Q110 25 125 40"/>
-
-        </svg>
-      </div>
-
-
-      <!-- Snorlax -->
-      <div class="pokemon snorlax">
-        <svg viewBox="0 0 200 180">
-
-          <ellipse cx="100" cy="110" rx="65" ry="48"/>
-
-          <!-- head -->
-          <path d="M55 75 Q60 25 100 30 Q140 25 145 75"/>
-
-          <!-- ears -->
-          <path d="M55 55 L40 35 L62 42"/>
-          <path d="M145 55 L160 35 L138 42"/>
-
-          <!-- eyes -->
-          <path class="detail"
-                d="M70 70 Q78 65 84 70"/>
-          <path class="detail"
-                d="M116 70 Q124 65 130 70"/>
-
-          <!-- nose -->
-          <path d="M94 82 Q100 76 106 82 L100 87 Z"/>
-
-          <!-- mouth -->
-          <path class="detail"
-                d="M88 92 Q100 104 112 92"/>
-
-          <!-- belly -->
-          <ellipse cx="100" cy="125" rx="38" ry="25"/>
-
-          <!-- arms -->
-          <path d="M45 100 Q20 105 28 125 Q35 135 50 125"/>
-          <path d="M155 100 Q180 105 172 125 Q165 135 150 125"/>
-
-        </svg>
-      </div>
-
-
-      <!-- Pikachu -->
-      <div class="pokemon pikachu">
-        <svg viewBox="0 0 220 240">
-
-          <!-- body -->
-          <ellipse cx="110" cy="145" rx="48" ry="65"/>
-
-          <!-- head -->
-          <ellipse cx="110" cy="82" rx="58" ry="52"/>
-
-          <!-- ears -->
-          <path d="M70 45 L38 8 L50 70"/>
-          <path d="M150 45 L182 8 L170 70"/>
-
-          <!-- ear tips -->
-          <path d="M38 8 L48 25"/>
-          <path d="M182 8 L172 25"/>
-
-          <!-- eyes -->
-          <circle cx="88" cy="82" r="7"/>
-          <circle cx="132" cy="82" r="7"/>
-
-          <!-- cheeks -->
-          <circle cx="62" cy="108" r="13"/>
-          <circle cx="158" cy="108" r="13"/>
-
-          <!-- mouth -->
-          <path class="detail"
-                d="M98 100 Q110 112 122 100"/>
-
-          <!-- arms -->
-          <path d="M68 140 Q35 130 30 150 Q30 165 62 163"/>
-          <path d="M152 140 Q185 130 190 150 Q190 165 158 163"/>
-
-          <!-- feet -->
-          <ellipse cx="80" cy="207" rx="22" ry="10"/>
-          <ellipse cx="140" cy="207" rx="22" ry="10"/>
-
-          <!-- tail -->
-          <polyline points="160,160 190,150 175,130 205,115"/>
-
-        </svg>
-      </div>
-
-
-      <!-- Eevee -->
-      <div class="pokemon eevee">
-        <svg viewBox="0 0 220 230">
-
-          <!-- body -->
-          <ellipse cx="110" cy="160" rx="55" ry="55"/>
-
-          <!-- head -->
-          <ellipse cx="110" cy="90" rx="60" ry="55"/>
-
-          <!-- ears -->
-          <path d="M65 55 L35 8 L80 35"/>
-          <path d="M155 55 L185 8 L140 35"/>
-
-          <!-- eyes -->
-          <ellipse cx="87" cy="92" rx="7" ry="10"/>
-          <ellipse cx="133" cy="92" rx="7" ry="10"/>
-
-          <!-- nose -->
-          <circle cx="110" cy="108" r="5"/>
-
-          <!-- mouth -->
-          <path class="detail"
-                d="M100 116 Q110 126 120 116"/>
-
-          <!-- fluffy collar -->
-          <path d="
-            M60 130
-            Q75 115 90 132
-            Q110 115 130 132
-            Q145 115 160 130
-            Q145 155 110 150
-            Q75 155 60 130
-          "/>
-
-          <!-- arms -->
-          <path d="M62 155 Q35 160 42 180 Q48 190 70 175"/>
-          <path d="M158 155 Q185 160 178 180 Q172 190 150 175"/>
-
-          <!-- feet -->
-          <ellipse cx="82" cy="210" rx="25" ry="10"/>
-          <ellipse cx="138" cy="210" rx="25" ry="10"/>
-
-        </svg>
-      </div>
-
-
-      <!-- Cake -->
-      <div class="cake-area">
-
-        <div class="candles">
-
-          <div class="candle">
-            <div class="wick"></div>
-            <div class="flame"></div>
-          </div>
-
-          <div class="candle">
-            <div class="wick"></div>
-            <div class="flame"></div>
-          </div>
-
-          <div class="candle">
-            <div class="wick"></div>
-            <div class="flame"></div>
-          </div>
-
-          <div class="candle">
-            <div class="wick"></div>
-            <div class="flame"></div>
-          </div>
-
-          <div class="candle">
-            <div class="wick"></div>
-            <div class="flame"></div>
-          </div>
-
-        </div>
-
-
-        <div class="cake">
-
-          <div class="cake-top"></div>
-
-          <div class="cake-body">
-            <div class="cream"></div>
-
-            <div class="berry b1"></div>
-            <div class="berry b2"></div>
-            <div class="berry b3"></div>
-            <div class="berry b4"></div>
-          </div>
-
-          <div class="cake-bottom"></div>
-
-        </div>
-
-        <div class="cake-shadow"></div>
-
-      </div>
-
-    </section>
-
-
-    <!-- Button -->
-
-    <button class="wish-button" id="wishButton">
-      🕯️ 点燃蜡烛 · Make a Wish
-    </button>
-
-
-    <!-- Message -->
-
-    <section class="message">
-
-      <h2>To You ♡</h2>
-
-      <p>
-        愿新的一岁，
-      </p>
-
-      <p>
-        有很多很多开心的事情发生。
-      </p>
-
-      <p>
-        愿你遇见温柔的人，看到漂亮的风景，
-        也一直有勇气去追逐自己喜欢的东西。
-      </p>
-
-      <p>
-        愿所有期待，都慢慢变成惊喜。
-      </p>
-
-      <p class="signature">
-        And of course...<br>
-        祝你生日快乐！🎂✨
-      </p>
-
-    </section>
-
-  </main>
-
-
-  <script>
-
-    const button = document.getElementById("wishButton");
-    const candles = document.querySelectorAll(".candle");
-
-    let lit = false;
-
-    button.addEventListener("click", () => {
-
-      lit = !lit;
-
-      candles.forEach((candle, index) => {
-
-        setTimeout(() => {
-          candle.classList.toggle("lit", lit);
-        }, index * 100);
-
-      });
-
-      if (lit) {
-
-        button.innerHTML = "✨ 蜡烛已经点亮 · Make a Wish!";
-
-      } else {
-
-        button.innerHTML = "🕯️ 点燃蜡烛 · Make a Wish";
-
-      }
-
-    });
-
-
-    /* =========================
-       Confetti
-    ========================== */
-
-    function createConfetti() {
-
-      for (let i = 0; i < 35; i++) {
-
-        const confetti = document.createElement("div");
-
-        confetti.className = "confetti";
-
-        confetti.style.left =
-          Math.random() * 100 + "vw";
-
-        confetti.style.animationDuration =
-          (3 + Math.random() * 4) + "s";
-
-        confetti.style.animationDelay =
-          Math.random() * 2 + "s";
-
-        const rotation =
-          Math.random() * 360;
-
-        confetti.style.transform =
-          `rotate(${rotation}deg)`;
-
-        document.body.appendChild(confetti);
-
-        setTimeout(() => {
-          confetti.remove();
-        }, 8000);
-      }
-    }
-
-
-    /* =========================
-       Birthday surprise
-    ========================== */
-
-    let surpriseShown = false;
-
-    button.addEventListener("click", () => {
-
-      if (!surpriseShown && !lit) {
-
-        surpriseShown = true;
-
-        setTimeout(() => {
-
-          createConfetti();
-
-          const message =
-            document.querySelector(".message");
-
-          message.animate(
-            [
-              {
-                transform: "scale(1)"
-              },
-              {
-                transform: "scale(1.04)"
-              },
-              {
-                transform: "scale(1)"
-              }
-            ],
-            {
-              duration: 700,
-              easing: "ease-out"
+    <div id="credit">⚡ Pikachu · 3D Cake</div>
+
+    <!-- 引入 Three.js 核心库和扩展 -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
             }
-          );
+        }
+    </script>
 
-        }, 200);
+    <script type="module">
+        // ============================================================
+        // 1. 导入 Three.js 模块
+        // ============================================================
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-      }
+        // ============================================================
+        // 2. 场景 / 相机 / 渲染器
+        // ============================================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a2a);
 
-    });
+        // 相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 4, 8);
+        camera.lookAt(0, 1.5, 0);
 
+        // WebGL 渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.body.appendChild(renderer.domElement);
 
-    /* =========================
-       Initial tiny sparkle
-    ========================== */
+        // 辅助轨道控制（可让用户自由视角，但为了自动旋转我们稍后禁用）
+        // 如果不希望用户控制，可以注释掉
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 1.5, 0);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 2.0;
+        controls.enableZoom = true;
+        controls.maxPolarAngle = Math.PI / 2.2;
 
-    window.addEventListener("load", () => {
+        // ============================================================
+        // 3. 灯光
+        // ============================================================
+        // 环境光
+        const ambient = new THREE.AmbientLight(0x404060);
+        scene.add(ambient);
 
-      setTimeout(() => {
+        // 主光
+        const mainLight = new THREE.DirectionalLight(0xffeedd, 1);
+        mainLight.position.set(3, 8, 5);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        scene.add(mainLight);
 
-        createConfetti();
+        // 补光
+        const fillLight = new THREE.DirectionalLight(0x4488ff, 0.4);
+        fillLight.position.set(-3, 2, -4);
+        scene.add(fillLight);
 
-      }, 700);
+        // 底光
+        const backLight = new THREE.PointLight(0xffaa44, 0.3);
+        backLight.position.set(0, 1, -5);
+        scene.add(backLight);
 
-    });
+        // 火焰光（动态）
+        const flameLight = new THREE.PointLight(0xff6600, 1.5, 8);
+        flameLight.position.set(0, 3.2, 0);
+        scene.add(flameLight);
 
-  </script>
+        // ============================================================
+        // 4. 地面（半透明发光圆盘）
+        // ============================================================
+        const groundGeometry = new THREE.CircleGeometry(3.5, 32);
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a4e,
+            emissive: 0x222266,
+            emissiveIntensity: 0.3,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.05;
+        ground.receiveShadow = true;
+        scene.add(ground);
 
+        // 添加一些闪烁小点在地面
+        const dotGeometry = new THREE.BufferGeometry();
+        const dotCount = 200;
+        const dotPositions = new Float32Array(dotCount * 3);
+        for (let i = 0; i < dotCount; i++) {
+            const r = 2.5 + Math.random() * 1.5;
+            const theta = Math.random() * Math.PI * 2;
+            dotPositions[i * 3] = Math.cos(theta) * r;
+            dotPositions[i * 3 + 1] = 0.01;
+            dotPositions[i * 3 + 2] = Math.sin(theta) * r;
+        }
+        dotGeometry.setAttribute('position', new THREE.BufferAttribute(dotPositions, 3));
+        const dotMaterial = new THREE.PointsMaterial({
+            color: 0x88aaff,
+            size: 0.08,
+            transparent: true,
+            opacity: 0.6
+        });
+        const dots = new THREE.Points(dotGeometry, dotMaterial);
+        scene.add(dots);
+
+        // ============================================================
+        // 5. 蛋糕主体（三层圆柱 + 奶油装饰）
+        // ============================================================
+        const cakeGroup = new THREE.Group();
+
+        // 层颜色（宝可梦主题：黄、红、白）
+        const colors = [0xffcb05, 0xee1515, 0xf5f5f5]; // 皮卡丘黄、精灵球红、奶油白
+        const heights = [0.8, 0.7, 0.6];
+        const radii = [1.5, 1.3, 1.1];
+
+        // 每一层
+        for (let i = 0; i < 3; i++) {
+            const geometry = new THREE.CylinderGeometry(radii[i], radii[i], heights[i], 32);
+            const material = new THREE.MeshStandardMaterial({
+                color: colors[i],
+                roughness: 0.3,
+                metalness: 0.1,
+                emissive: i === 0 ? new THREE.Color(0xffaa00).multiplyScalar(0.2) : 0x000000,
+            });
+            const layer = new THREE.Mesh(geometry, material);
+            layer.castShadow = true;
+            layer.receiveShadow = true;
+            // 从下往上堆叠
+            let yPos = 0;
+            for (let j = 0; j < i; j++) {
+                yPos += heights[j];
+            }
+            layer.position.y = yPos + heights[i] / 2;
+            cakeGroup.add(layer);
+
+            // 在每层顶部加一圈奶油小球（装饰）
+            const creamCount = 12;
+            for (let k = 0; k < creamCount; k++) {
+                const angle = (k / creamCount) * Math.PI * 2;
+                const radius = radii[i] * 0.85;
+                const creamBall = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.08 + (i === 2 ? 0.1 : 0.06), 8),
+                    new THREE.MeshStandardMaterial({
+                        color: i === 2 ? 0xffaa66 : 0xfff5e6,
+                        emissive: i === 2 ? 0xff6600 : 0x000000,
+                        emissiveIntensity: 0.2,
+                        roughness: 0.2
+                    })
+                );
+                creamBall.position.set(
+                    Math.cos(angle) * radius,
+                    yPos + heights[i] - 0.02,
+                    Math.sin(angle) * radius
+                );
+                creamBall.castShadow = true;
+                creamBall.receiveShadow = true;
+                cakeGroup.add(creamBall);
+            }
+        }
+
+        // 顶部装饰：精灵球（红色半球 + 白色半球 + 按钮）
+        function createPokeBall(posX, posY, posZ, scale = 0.3) {
+            const group = new THREE.Group();
+
+            // 下半球（白色）
+            const bottomHalf = new THREE.Mesh(
+                new THREE.SphereGeometry(0.4, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+            );
+            bottomHalf.rotation.x = Math.PI;
+            bottomHalf.position.y = -0.4;
+
+            // 上半球（红色）
+            const topHalf = new THREE.Mesh(
+                new THREE.SphereGeometry(0.4, 20, 20, 0, Math.PI * 2, 0, Math.PI / 2),
+                new THREE.MeshStandardMaterial({ color: 0xee1515, roughness: 0.3 })
+            );
+            topHalf.position.y = 0.4;
+
+            // 中间环（黑色）
+            const ring = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.41, 0.41, 0.06, 20),
+                new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 })
+            );
+            ring.position.y = 0;
+
+            // 中心按钮（白色小圆）
+            const button = new THREE.Mesh(
+                new THREE.CircleGeometry(0.12, 16),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, emissive: 0x4488ff, emissiveIntensity: 0.1 })
+            );
+            button.position.set(0, 0, 0.41);
+            button.rotation.x = Math.PI / 2;
+
+            group.add(bottomHalf);
+            group.add(topHalf);
+            group.add(ring);
+            group.add(button);
+
+            group.scale.set(scale, scale, scale);
+            group.position.set(posX, posY, posZ);
+            return group;
+        }
+
+        // 在蛋糕顶部放一个精灵球
+        const pokeBall = createPokeBall(0, 2.2, 0.8, 0.45);
+        cakeGroup.add(pokeBall);
+
+        // 再放两个小精灵球在侧边
+        const ball2 = createPokeBall(-0.8, 1.9, -0.7, 0.25);
+        cakeGroup.add(ball2);
+        const ball3 = createPokeBall(0.9, 1.7, -0.9, 0.25);
+        cakeGroup.add(ball3);
+
+        scene.add(cakeGroup);
+
+        // ============================================================
+        // 6. 蜡烛（细长柱 + 火焰粒子）
+        // ============================================================
+        const candleGroup = new THREE.Group();
+
+        // 蜡烛主体
+        const candleMat = new THREE.MeshStandardMaterial({
+            color: 0xffaa66,
+            emissive: 0xff4400,
+            emissiveIntensity: 0.2,
+            roughness: 0.4
+        });
+        const candleCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.8, 12), candleMat);
+        candleCylinder.position.y = 2.4; // 放在顶层上方
+        candleCylinder.castShadow = true;
+        candleCylinder.receiveShadow = true;
+        candleGroup.add(candleCylinder);
+
+        // 蜡烛条纹（装饰）
+        for (let i = 0; i < 3; i++) {
+            const stripe = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.19, 0.19, 0.04, 12),
+                new THREE.MeshStandardMaterial({ color: 0xffdd99, emissive: 0xff8800, emissiveIntensity: 0.1 })
+            );
+            stripe.position.y = 2.1 + i * 0.25;
+            candleGroup.add(stripe);
+        }
+
+        // 火焰 (使用粒子系统和点光源)
+        const flameGroup = new THREE.Group();
+        flameGroup.position.set(0, 2.85, 0);
+
+        // 外焰（半透明光晕）
+        const glowMat = new THREE.SpriteMaterial({
+            map: createGlowTexture(),
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            opacity: 0.7
+        });
+        const glowSprite = new THREE.Sprite(glowMat);
+        glowSprite.scale.set(0.6, 0.8, 1);
+        flameGroup.add(glowSprite);
+
+        // 内焰（更亮）
+        const innerGlowMat = new THREE.SpriteMaterial({
+            map: createGlowTexture(),
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            color: 0xffaa44,
+            opacity: 0.9
+        });
+        const innerGlow = new THREE.Sprite(innerGlowMat);
+        innerGlow.scale.set(0.3, 0.4, 1);
+        flameGroup.add(innerGlow);
+
+        // 粒子火焰（动态）
+        const particleCount = 30;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePos = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount; i++) {
+            particlePos[i * 3] = (Math.random() - 0.5) * 0.2;
+            particlePos[i * 3 + 1] = Math.random() * 0.5;
+            particlePos[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0xff8800,
+            size: 0.04,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+        });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        flameGroup.add(particles);
+
+        candleGroup.add(flameGroup);
+        scene.add(candleGroup);
+
+        // 辅助函数生成圆形渐变纹理
+        function createGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255, 255, 200, 1)');
+            gradient.addColorStop(0.2, 'rgba(255, 200, 100, 1)');
+            gradient.addColorStop(0.6, 'rgba(255, 100, 20, 0.6)');
+            gradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        // ============================================================
+        // 7. 漂浮的宝可梦元素（精灵球、星星）
+        // ============================================================
+        const floatingGroup = new THREE.Group();
+
+        // 生成一些旋转的精灵球（围绕蛋糕）
+        const ballCount = 6;
+        for (let i = 0; i < ballCount; i++) {
+            const ball = createPokeBall(0, 0, 0, 0.2);
+            const angle = (i / ballCount) * Math.PI * 2;
+            const radius = 2.6;
+            ball.position.set(Math.cos(angle) * radius, 1.0 + Math.random() * 1.5, Math.sin(angle) * radius);
+            ball.userData = { angle: angle, radius: radius, speed: 0.5 + Math.random() * 0.3, heightOffset: Math.random() * 2 };
+            floatingGroup.add(ball);
+        }
+
+        // 星星
+        const starMat = new THREE.SpriteMaterial({
+            map: createStarTexture(),
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            color: 0xffdd44,
+        });
+        for (let i = 0; i < 40; i++) {
+            const star = new THREE.Sprite(starMat);
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const r = 3 + Math.random() * 4;
+            star.position.set(
+                r * Math.sin(phi) * Math.cos(theta),
+                Math.random() * 5,
+                r * Math.sin(phi) * Math.sin(theta)
+            );
+            star.scale.set(0.1 + Math.random() * 0.2, 0.1 + Math.random() * 0.2, 1);
+            star.userData = { rotSpeed: 0.5 + Math.random() * 1 };
+            floatingGroup.add(star);
+        }
+
+        scene.add(floatingGroup);
+
+        function createStarTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 32, 32);
+            ctx.shadowBlur = 10;
+            // 绘制四角星
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            const points = 4;
+            const outer = 14;
+            const inner = 6;
+            for (let i = 0; i < points * 2; i++) {
+                const radius = i % 2 === 0 ? outer : inner;
+                const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+                const x = 16 + radius * Math.cos(angle);
+                const y = 16 + radius * Math.sin(angle);
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // ============================================================
+        // 8. 粒子背景（闪烁星星）
+        // ============================================================
+        const bgStarCount = 300;
+        const bgStarGeo = new THREE.BufferGeometry();
+        const bgStarPos = new Float32Array(bgStarCount * 3);
+        for (let i = 0; i < bgStarCount; i++) {
+            const r = 15 + Math.random() * 20;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            bgStarPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            bgStarPos[i * 3 + 1] = r * Math.cos(phi);
+            bgStarPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+        }
+        bgStarGeo.setAttribute('position', new THREE.BufferAttribute(bgStarPos, 3));
+        const bgStarMat = new THREE.PointsMaterial({
+            color: 0x88aaff,
+            size: 0.15,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+        });
+        const bgStars = new THREE.Points(bgStarGeo, bgStarMat);
+        scene.add(bgStars);
+
+        // ============================================================
+        // 9. 动画循环 & 自动旋转
+        // ============================================================
+        let clock = new THREE.Clock();
+
+        function animate() {
+            const delta = clock.getDelta();
+            const elapsedTime = performance.now() / 1000;
+
+            // 自动旋转
+            controls.update();
+
+            // 火焰闪烁
+            const flicker = 0.9 + Math.random() * 0.2;
+            flameLight.intensity = 1.0 + Math.random() * 0.8;
+            flameGroup.scale.set(flicker, 1 + Math.random() * 0.1, flicker);
+            // 粒子更新
+            const positions = particles.geometry.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3 + 1] += delta * 0.2 + Math.random() * 0.01;
+                if (positions[i * 3 + 1] > 0.6) {
+                    positions[i * 3 + 1] = 0;
+                    positions[i * 3] = (Math.random() - 0.5) * 0.2;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+                }
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            // 浮动精灵球旋转和上下浮动
+            floatingGroup.children.forEach((child, index) => {
+                if (child.userData.angle !== undefined) {
+                    // 旋转
+                    child.userData.angle += delta * child.userData.speed;
+                    const x = Math.cos(child.userData.angle) * child.userData.radius;
+                    const z = Math.sin(child.userData.angle) * child.userData.radius;
+                    child.position.x = x;
+                    child.position.z = z;
+                    child.position.y = 1.0 + Math.sin(elapsedTime * 0.5 + index) * 0.3 + 0.5;
+                    // 自转
+                    child.rotation.y += delta * 0.5;
+                } else if (child.isSprite) {
+                    // 星星闪烁
+                    const scale = 0.1 + Math.sin(elapsedTime * child.userData.rotSpeed + index) * 0.05;
+                    child.scale.set(scale, scale, 1);
+                }
+            });
+
+            // 渲染
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // ============================================================
+        // 10. 窗口自适应
+        // ============================================================
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 如果设备是移动端，稍微调整相机
+        if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            camera.position.set(4, 3, 6);
+            controls.target.set(0, 1.2, 0);
+        }
+
+        // 提示用户可交互（可选）
+        console.log('🎂 宝可梦生日蛋糕 3D！拖动视角查看~');
+    </script>
 </body>
 </html>
