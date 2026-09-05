@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title> 🎂 Happy Birthday! </title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&family=Poppins:wght@600&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #f7f3eb;
@@ -22,6 +23,24 @@
             display: block; width: 100%; height: auto; border-radius: 16px;
             background: #fcf9f2; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
             touch-action: none; cursor: pointer;
+        }
+
+        .title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.8rem;
+            font-weight: 700;
+        }
+
+        .sub-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+
+        .action-hint {
+            font-family: 'Dancing Script', cursive;
+            font-weight: 700;
+            font-size: 1.3rem;
         }
 
         /* Texto de felicitación (más pequeño ahora) */
@@ -69,8 +88,8 @@
 <div class="container">
     <canvas id="sketchCanvas" width="800" height="800"></canvas>
     <div class="text-overlay" id="textOverlay">
-        <h1>✨ ¡Feliz Cumple! ✨</h1>
-        <p>🎂 Que este año te traiga salud, alegría y bonitos recuerdos! </p>
+        <h1 class="title">✨ ¡Feliz Cumple! ✨</h1>
+        <p class="sub-text">🎂 Que este año te traiga salud, alegría y bonitos recuerdos! </p>
     </div>
     <div class="status" id="statusLabel">✏️ dibujando...</div>
 </div>
@@ -263,7 +282,7 @@
             ctx.fillStyle = PENCIL;
             ctx.font = '600 26px "Comic Sans MS", "Segoe UI", cursive';
             ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-            ctx.fillText('¡Toca la vela y pide un deseo! 👈', cx + 120, wickY + 78 + bob);
+            ctx.fillText('¡Toca la vela! 👈', cx + 120, wickY + 78 + bob);
             ctx.restore();
         }
 
