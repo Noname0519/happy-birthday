@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
@@ -520,6 +520,800 @@
         });
 
         // console.log('✏️ Pastel a lápiz cargado. ¡Doble click para reiniciar el dibujo!');
+
+
+    })();
+</script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>✏️ Pastel + Chiikawa · Feliz Cumple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #f2ede6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Poppins', 'Comic Sans MS', cursive, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .container {
+            background: #fcf9f2;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), 0 8px 20px rgba(0, 0, 0, 0.02);
+            padding: 16px;
+            position: relative;
+            max-width: 96vw;
+            max-height: 96vh;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            background: #fcf9f2;
+            touch-action: none;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+        }
+        /* Texto superpuesto */
+        .text-overlay {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+            padding: 0 16px;
+            transition: opacity 1s ease;
+        }
+        .text-overlay h1 {
+            font-size: clamp(1.6rem, 6vw, 3.4rem);
+            font-weight: 800;
+            color: #2d2a24;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 12px rgba(255, 215, 215, 0.2);
+            margin: 0;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards;
+            animation-delay: 4s;
+        }
+        .text-overlay p {
+            font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+            color: #7a6e5d;
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin-top: 2px;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards;
+            animation-delay: 4.4s;
+            background: rgba(255, 255, 255, 0.4);
+            display: inline-block;
+            padding: 2px 18px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+        }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .status {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 0.75rem;
+            color: #b5aa99;
+            letter-spacing: 1px;
+            font-weight: 300;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 14px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            z-index: 20;
+            border: 1px solid rgba(0,0,0,0.02);
+            pointer-events: none;
+            transition: color 0.3s;
+        }
+        .hint {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #c5b9a8;
+            letter-spacing: 1px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.6;
+        }
+        @media (max-width: 500px) {
+            .container { padding: 8px; border-radius: 20px; }
+            .text-overlay { bottom: 20px; }
+            .status { top: 10px; right: 12px; font-size: 0.6rem; padding: 2px 10px; }
+            .hint { bottom: 60px; font-size: 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <canvas id="sketchCanvas" width="800" height="800"></canvas>
+    <div class="text-overlay">
+        <h1>🎉 ¡Feliz Cumple! 🎉</h1>
+        <p>🐰 Usagi y el pastel te desean lo mejor</p>
+    </div>
+    <div class="status" id="statusLabel">✏️ dibujando...</div>
+    <div class="hint">💡 Toca a Usagi o a la llama · doble toque para reiniciar</div>
+</div>
+
+<script>
+    (function() {
+        const canvas = document.getElementById('sketchCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusLabel = document.getElementById('statusLabel');
+
+        const SIZE = 800;
+        canvas.width = SIZE;
+        canvas.height = SIZE;
+
+        // Centro y escalas
+        const cx = SIZE / 2;
+        const baseY = SIZE * 0.72;
+        const scale = SIZE / 800;
+
+        // Colores
+        const PENCIL = '#2b2a27';
+        const PENCIL_LIGHT = '#5a554a';
+        const PAPER = '#fcf9f2';
+
+        // ============================================================
+        // 1. DEFINICIÓN DE LOS TRAZOS DEL PASTEL (igual que antes)
+        // ============================================================
+        const paths = [];
+
+        function addRect(x, y, w, h) {
+            paths.push([
+                [x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]
+            ]);
+        }
+        function addLine(x1, y1, x2, y2) {
+            paths.push([
+                [x1, y1], [x2, y2]
+            ]);
+        }
+        function addCurve(cx, cy, r, startA, endA, seg = 10) {
+            const pts = [];
+            for (let i = 0; i <= seg; i++) {
+                const t = i / seg;
+                const a = startA + (endA - startA) * t;
+                pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+            }
+            paths.push(pts);
+        }
+
+        // Capas del pastel
+        const w1 = 300, h1 = 70;
+        const w2 = 250, h2 = 60;
+        const w3 = 200, h3 = 50;
+        const x1 = cx - w1/2, y1 = baseY - h1;
+        const x2 = cx - w2/2, y2 = y1 - h2;
+        const x3 = cx - w3/2, y3 = y2 - h3;
+        addRect(x1, y1, w1, h1);
+        addRect(x2, y2, w2, h2);
+        addRect(x3, y3, w3, h3);
+
+        // Crema superior
+        const creamY = y3;
+        const startX = x3 + 10, endX = x3 + w3 - 10;
+        const creamPts = [];
+        for (let i = 0; i <= 16; i++) {
+            const t = i / 16;
+            const x = startX + t * (endX - startX);
+            const wave = Math.sin(t * Math.PI * 4) * 8;
+            creamPts.push([x, creamY + wave - 4]);
+        }
+        paths.push(creamPts);
+
+        // Bolitas de crema
+        for (let i = 0; i < 8; i++) {
+            const t = (i + 0.5) / 8;
+            const x = startX + t * (endX - startX);
+            const y = creamY + Math.sin(t * Math.PI * 4) * 8 - 6;
+            const pts = [];
+            const r = 6;
+            for (let j = 0; j <= 8; j++) {
+                const a = (j / 8) * Math.PI * 2;
+                pts.push([x + r * Math.cos(a), y + r * Math.sin(a)]);
+            }
+            paths.push(pts);
+        }
+
+        // Vela
+        const candleW = 24, candleH = 90;
+        const candleX = cx - candleW/2;
+        const candleY = y3 - candleH + 8;
+        addRect(candleX, candleY, candleW, candleH);
+        for (let i = 1; i <= 3; i++) {
+            const yRay = candleY + (i / 4) * candleH;
+            addLine(candleX + 4, yRay, candleX + candleW - 4, yRay);
+        }
+
+        // Mecha
+        const wickX = cx;
+        const wickY = candleY - 4;
+        addLine(wickX, wickY, wickX, wickY - 14);
+
+        const totalPaths = paths.length;
+
+        // ============================================================
+        // 2. DIBUJADO DE TRAZOS (con efecto lápiz)
+        // ============================================================
+        function drawPath(pts, progress, color = PENCIL, lineWidth = 2.2) {
+            if (pts.length < 2) return;
+            const totalSeg = pts.length - 1;
+            const drawSeg = Math.floor(progress * totalSeg);
+            const frac = (progress * totalSeg) - drawSeg;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowColor = 'rgba(0,0,0,0.02)';
+            ctx.shadowBlur = 2;
+
+            for (let i = 0; i < drawSeg && i < totalSeg; i++) {
+                const p1 = pts[i];
+                const p2 = pts[i + 1];
+                const vib = 0.6;
+                const nx = (Math.random() - 0.5) * vib;
+                const ny = (Math.random() - 0.5) * vib;
+                ctx.beginPath();
+                ctx.moveTo(p1[0] + (i===0?0:nx*0.5), p1[1] + (i===0?0:ny*0.5));
+                ctx.lineTo(p2[0] + nx, p2[1] + ny);
+                ctx.stroke();
+            }
+            if (drawSeg < totalSeg && frac > 0.01) {
+                const p1 = pts[drawSeg];
+                const p2 = pts[drawSeg + 1];
+                const fx = p1[0] + (p2[0] - p1[0]) * frac;
+                const fy = p1[1] + (p2[1] - p1[1]) * frac;
+                ctx.beginPath();
+                ctx.moveTo(p1[0], p1[1]);
+                ctx.lineTo(fx + (Math.random()-0.5)*0.8, fy + (Math.random()-0.5)*0.8);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // ============================================================
+        // 3. DIBUJO DE LA LLAMA (con interacción de apagado)
+        // ============================================================
+        let flameOn = true;
+        let flameOffTimer = null;
+        let flameFade = 1; // 1 = encendida, 0 = apagada
+
+        function drawFlame(progress, flicker, opacity = 1) {
+            if (progress <= 0 || flameFade <= 0) return;
+            const fx = cx;
+            const fy = wickY - 14;
+            const baseH = 50;
+            const baseW = 28;
+            const flick = 1 + 0.08 * Math.sin(flicker * 4) + 0.04 * Math.sin(flicker * 7);
+            const h = baseH * flick * progress * flameFade;
+            const w = baseW * (0.7 + 0.3 * progress) * flick * flameFade;
+
+            // Resplandor
+            if (progress > 0.5 && flameFade > 0.1) {
+                const gi = (progress - 0.5) * 2 * flameFade;
+                const grad = ctx.createRadialGradient(fx, fy - h*0.3, 0, fx, fy - h*0.3, w*1.6);
+                grad.addColorStop(0, `rgba(255, 220, 150, ${0.3 * gi})`);
+                grad.addColorStop(0.4, `rgba(255, 180, 80, ${0.15 * gi})`);
+                grad.addColorStop(1, `rgba(255, 150, 50, 0)`);
+                ctx.save();
+                ctx.fillStyle = grad;
+                ctx.shadowColor = 'transparent';
+                ctx.beginPath();
+                ctx.arc(fx, fy - h*0.3, w*1.6, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Llama exterior
+            const grad2 = ctx.createRadialGradient(fx, fy - h*0.2, 0, fx, fy - h*0.3, w);
+            grad2.addColorStop(0, `rgba(255, 255, 200, ${0.9 * flameFade})`);
+            grad2.addColorStop(0.3, `rgba(255, 200, 80, ${0.9 * flameFade})`);
+            grad2.addColorStop(0.7, `rgba(255, 140, 30, ${0.8 * flameFade})`);
+            grad2.addColorStop(1, `rgba(200, 80, 0, 0)`);
+            ctx.save();
+            ctx.shadowColor = `rgba(255, 150, 50, ${0.3 * flameFade})`;
+            ctx.shadowBlur = 30;
+            ctx.beginPath();
+            ctx.moveTo(fx, fy - h);
+            ctx.bezierCurveTo(fx + w*0.9, fy - h*0.4, fx + w*0.5, fy + h*0.1, fx, fy + h*0.1);
+            ctx.bezierCurveTo(fx - w*0.5, fy + h*0.1, fx - w*0.9, fy - h*0.4, fx, fy - h);
+            ctx.closePath();
+            ctx.fillStyle = grad2;
+            ctx.fill();
+            ctx.restore();
+
+            // Llama interior
+            if (progress > 0.7 && flameFade > 0.2) {
+                const p2 = (progress - 0.7) / 0.3 * Math.min(1, flameFade * 1.5);
+                const h2 = h * 0.5 * p2;
+                const w2 = w * 0.4 * p2;
+                ctx.save();
+                ctx.shadowColor = `rgba(255, 200, 100, ${0.5 * flameFade})`;
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.moveTo(fx, fy - h2 - 4);
+                ctx.bezierCurveTo(fx + w2*0.8, fy - h2*0.4, fx + w2*0.4, fy + h2*0.1, fx, fy + h2*0.1);
+                ctx.bezierCurveTo(fx - w2*0.4, fy + h2*0.1, fx - w2*0.8, fy - h2*0.4, fx, fy - h2 - 4);
+                ctx.closePath();
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * flameFade})`;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Contorno a lápiz (si no está apagada del todo)
+            if (progress < 0.9 && flameFade > 0.1) {
+                const pencilP = progress / 0.9 * Math.min(1, flameFade * 1.2);
+                ctx.save();
+                ctx.strokeStyle = PENCIL;
+                ctx.lineWidth = 1.5;
+                ctx.globalAlpha = Math.min(1, pencilP * 1.5);
+                ctx.beginPath();
+                ctx.moveTo(fx, fy - h * pencilP);
+                ctx.bezierCurveTo(fx + w*0.8 * pencilP, fy - h*0.4 * pencilP, fx + w*0.4 * pencilP, fy + h*0.1 * pencilP, fx, fy + h*0.1 * pencilP);
+                ctx.bezierCurveTo(fx - w*0.4 * pencilP, fy + h*0.1 * pencilP, fx - w*0.8 * pencilP, fy - h*0.4 * pencilP, fx, fy - h * pencilP);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // ============================================================
+        // 4. DIBUJO DE CHIIKAWA (USAGI)
+        // ============================================================
+        // Definimos la posición de Usagi: a la izquierda del pastel
+        const usagiX = cx - 180;
+        const usagiY = y3 + 30;
+
+        function drawUsagi(progress, time) {
+            if (progress <= 0) return;
+            const p = Math.min(1, progress);
+
+            // Escala según progreso (para efecto de "dibujo")
+            const s = p;
+            const baseSize = 60 * s;
+            const x = usagiX;
+            const y = usagiY - (1 - p) * 30; // aparece subiendo ligeramente
+
+            // Colores
+            const bodyColor = '#fce4b0'; // amarillo pastel
+            const earColor = '#fce4b0';
+            const innerEar = '#f5d6a8';
+
+            // ---- Función para dibujar el cuerpo con trazo a lápiz y relleno ----
+            ctx.save();
+
+            // Relleno (solo si p > 0.3 para que se vea el proceso)
+            if (p > 0.3) {
+                ctx.beginPath();
+                // Cabeza (círculo)
+                ctx.ellipse(x, y - 10 * s, 40 * s, 38 * s, 0, 0, Math.PI * 2);
+                // Orejas (dos)
+                // Oreja izquierda
+                ctx.moveTo(x - 18 * s, y - 30 * s);
+                ctx.quadraticCurveTo(x - 35 * s, y - 70 * s, x - 22 * s, y - 75 * s);
+                ctx.quadraticCurveTo(x - 12 * s, y - 70 * s, x - 10 * s, y - 35 * s);
+                // Oreja derecha
+                ctx.moveTo(x + 18 * s, y - 30 * s);
+                ctx.quadraticCurveTo(x + 35 * s, y - 70 * s, x + 22 * s, y - 75 * s);
+                ctx.quadraticCurveTo(x + 12 * s, y - 70 * s, x + 10 * s, y - 35 * s);
+                ctx.closePath();
+                ctx.fillStyle = bodyColor;
+                ctx.shadowColor = 'rgba(0,0,0,0.03)';
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Orejas interiores (solo si p > 0.6)
+                if (p > 0.6) {
+                    ctx.fillStyle = innerEar;
+                    // izquierda
+                    ctx.beginPath();
+                    ctx.ellipse(x - 23 * s, y - 58 * s, 10 * s, 18 * s, -0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    // derecha
+                    ctx.beginPath();
+                    ctx.ellipse(x + 23 * s, y - 58 * s, 10 * s, 18 * s, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Ojos (si p > 0.7)
+            if (p > 0.7) {
+                const eyeY = y - 15 * s;
+                // Ojos negros con brillo
+                ctx.fillStyle = '#2d2a24';
+                ctx.beginPath();
+                ctx.arc(x - 16 * s, eyeY, 6 * s, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + 16 * s, eyeY, 6 * s, 0, Math.PI * 2);
+                ctx.fill();
+                // Brillo
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(x - 19 * s, eyeY - 3 * s, 2.5 * s, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + 13 * s, eyeY - 3 * s, 2.5 * s, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Boca (sonrisa) si p > 0.8
+            if (p > 0.8) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#2d2a24';
+                ctx.lineWidth = 1.8 * s;
+                ctx.lineCap = 'round';
+                ctx.arc(x, y + 4 * s, 14 * s, 0.1, Math.PI - 0.1);
+                ctx.stroke();
+            }
+
+            // Trazo a lápiz del contorno (siempre visible, incluso antes del relleno)
+            ctx.strokeStyle = PENCIL;
+            ctx.lineWidth = 2.0 * s;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.globalAlpha = Math.min(1, p * 1.2);
+
+            // Cabeza
+            ctx.beginPath();
+            ctx.ellipse(x, y - 10 * s, 40 * s, 38 * s, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Orejas
+            ctx.beginPath();
+            ctx.moveTo(x - 18 * s, y - 30 * s);
+            ctx.quadraticCurveTo(x - 38 * s, y - 72 * s, x - 22 * s, y - 78 * s);
+            ctx.quadraticCurveTo(x - 10 * s, y - 72 * s, x - 10 * s, y - 35 * s);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + 18 * s, y - 30 * s);
+            ctx.quadraticCurveTo(x + 38 * s, y - 72 * s, x + 22 * s, y - 78 * s);
+            ctx.quadraticCurveTo(x + 10 * s, y - 72 * s, x + 10 * s, y - 35 * s);
+            ctx.stroke();
+
+            // Ojos (contorno) si p > 0.7
+            if (p > 0.7) {
+                // solo contorno para mantener estilo lápiz (ya pintados antes)
+            }
+
+            // Sonrisa (contorno)
+            if (p > 0.8) {
+                ctx.beginPath();
+                ctx.arc(x, y + 4 * s, 14 * s, 0.1, Math.PI - 0.1);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            // ---- Efecto de parpadeo (si el dibujo ya está completo) ----
+            if (p >= 1 && time) {
+                const blink = Math.sin(time * 0.8) > 0.9; // parpadeo rápido cada ~2s
+                if (blink) {
+                    // Dibujar párpados cerrados (líneas horizontales)
+                    ctx.save();
+                    ctx.strokeStyle = PENCIL;
+                    ctx.lineWidth = 2.5 * s;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 22 * s, y - 15 * s);
+                    ctx.lineTo(x - 10 * s, y - 15 * s);
+                    ctx.moveTo(x + 10 * s, y - 15 * s);
+                    ctx.lineTo(x + 22 * s, y - 15 * s);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // ============================================================
+        // 5. PARTÍCULAS (estrellas y corazones) al hacer clic en Usagi
+        // ============================================================
+        let particles = [];
+
+        function spawnParticles(px, py) {
+            const colors = ['#ffb7b2', '#e2f0cb', '#ffdac1', '#fbc2eb', '#a6c1ee', '#ff9aa2', '#f7dc6f'];
+            for (let i = 0; i < 25; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 3;
+                const size = 4 + Math.random() * 10;
+                const isHeart = Math.random() > 0.5;
+                particles.push({
+                    x: px,
+                    y: py,
+                    vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+                    vy: Math.sin(angle) * speed * (0.5 + Math.random()) - 1,
+                    life: 1,
+                    decay: 0.008 + Math.random() * 0.015,
+                    size: size,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    isHeart: isHeart,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.1
+                });
+            }
+        }
+
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.03; // gravedad leve
+                p.life -= p.decay;
+                p.rotation += p.rotSpeed;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = p.life * 0.9;
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = 'rgba(255, 180, 150, 0.2)';
+                ctx.shadowBlur = 8;
+                if (p.isHeart) {
+                    // Dibujar corazón simple con dos arcos
+                    const s = p.size / 12;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 3 * s);
+                    ctx.bezierCurveTo(0, -2 * s, -5 * s, -6 * s, -9 * s, -2 * s);
+                    ctx.bezierCurveTo(-12 * s, 0, -6 * s, 6 * s, 0, 10 * s);
+                    ctx.bezierCurveTo(6 * s, 6 * s, 12 * s, 0, 9 * s, -2 * s);
+                    ctx.bezierCurveTo(5 * s, -6 * s, 0, -2 * s, 0, 3 * s);
+                    ctx.fill();
+                } else {
+                    // Estrella de 4 puntas
+                    const s = p.size / 2;
+                    ctx.beginPath();
+                    for (let j = 0; j < 8; j++) {
+                        const r = j % 2 === 0 ? s : s * 0.4;
+                        const a = (j / 8) * Math.PI * 2 - Math.PI / 2;
+                        const px2 = r * Math.cos(a);
+                        const py2 = r * Math.sin(a);
+                        j === 0 ? ctx.moveTo(px2, py2) : ctx.lineTo(px2, py2);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        // ============================================================
+        // 6. DETECCIÓN DE CLIC en Usagi y en la llama
+        // ============================================================
+        function isInsideUsagi(mx, my) {
+            const dx = mx - usagiX;
+            const dy = my - (usagiY - 10); // centro aproximado
+            return (dx * dx + dy * dy) < 2500; // radio ~50
+        }
+
+        function isInsideFlame(mx, my) {
+            const fx = cx;
+            const fy = wickY - 14 - 20; // centro de la llama
+            const dx = mx - fx;
+            const dy = my - fy;
+            return (dx * dx + dy * dy) < 900; // radio ~30
+        }
+
+        // ============================================================
+        // 7. BUCLE PRINCIPAL DE ANIMACIÓN
+        // ============================================================
+        let startTime = performance.now();
+        const DRAW_DURATION = 4500;
+        let isComplete = false;
+        let usagiDrawn = false;
+        let usagiProgress = 0;
+        let animFrame;
+
+        // Variables para el estado de la llama
+        let flameProgress = 0;
+
+        function animate(now) {
+            const elapsed = now - startTime;
+            let progress = Math.min(1, elapsed / DRAW_DURATION);
+
+            // Limpiar canvas
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            ctx.fillStyle = PAPER;
+            ctx.fillRect(0, 0, SIZE, SIZE);
+
+            // Textura de papel
+            ctx.save();
+            ctx.globalAlpha = 0.04;
+            for (let i = 0; i < 300; i++) {
+                const x = Math.random() * SIZE;
+                const y = Math.random() * SIZE;
+                const r = Math.random() * 1.5;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fillStyle = '#b5aa99';
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Dibujar trazos del pastel
+            const progressPerPath = 1 / totalPaths;
+            for (let i = 0; i < totalPaths; i++) {
+                const pathStart = i / totalPaths;
+                const pathEnd = (i + 1) / totalPaths;
+                let pathProgress = 0;
+                if (progress >= pathEnd) pathProgress = 1;
+                else if (progress > pathStart) pathProgress = (progress - pathStart) / (1 / totalPaths);
+                let color = PENCIL;
+                let lineW = 2.2;
+                if (i > totalPaths - 6) { color = PENCIL_LIGHT; lineW = 1.8; }
+                if (i >= totalPaths - 10 && i < totalPaths - 4) { color = PENCIL; lineW = 2.0; }
+                if (pathProgress > 0) drawPath(paths[i], pathProgress, color, lineW);
+            }
+
+            // Estado del dibujo
+            if (progress >= 1) {
+                if (!isComplete) {
+                    isComplete = true;
+                    statusLabel.textContent = '🐰 ¡Usagi está llegando!';
+                }
+
+                // Dibujar a Usagi (con retraso de 0.5s después de terminar el pastel)
+                const usagiDelay = 500;
+                const usagiElapsed = now - (startTime + DRAW_DURATION + usagiDelay);
+                if (usagiElapsed > 0) {
+                    usagiProgress = Math.min(1, usagiElapsed / 2000); // 2 segundos para dibujarse
+                    if (usagiProgress >= 1 && !usagiDrawn) {
+                        usagiDrawn = true;
+                        statusLabel.textContent = '🎂 ¡Todo listo! Toca a Usagi ✨';
+                    }
+                    drawUsagi(usagiProgress, now / 1000);
+                }
+
+                // Llama (se enciende después de que Usagi esté casi listo, pero la mantenemos)
+                const flameStart = startTime + DRAW_DURATION + 1800;
+                const flameElapsed = now - flameStart;
+                if (flameElapsed > 0) {
+                    flameProgress = Math.min(1, flameElapsed / 1000);
+                    drawFlame(flameProgress, now / 100, flameFade);
+                    // Si la llama está apagada y no hay temporizador, la reavivamos después de 3s
+                    if (flameFade < 0.1 && flameOffTimer === null) {
+                        flameOffTimer = setTimeout(() => {
+                            flameFade = 1;
+                            flameOffTimer = null;
+                            statusLabel.textContent = '🕯️ ¡La llama se reavivó!';
+                            setTimeout(() => {
+                                if (usagiDrawn) statusLabel.textContent = '🎂 ¡Toca a Usagi o a la llama!';
+                            }, 1500);
+                        }, 3000);
+                    }
+                }
+            } else {
+                // Actualizar estado del dibujo
+                const percent = Math.round(progress * 100);
+                statusLabel.textContent = `✏️ dibujando ${percent}%`;
+            }
+
+            // Dibujar partículas
+            drawParticles();
+
+            // Actualizar canvas
+            animFrame = requestAnimationFrame(animate);
+        }
+
+        // ============================================================
+        // 8. EVENTOS DE INTERACCIÓN
+        // ============================================================
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mx = (e.clientX - rect.left) * scaleX;
+            const my = (e.clientY - rect.top) * scaleY;
+
+            // Verificar clic en Usagi (solo si ya está dibujado)
+            if (usagiDrawn && usagiProgress >= 1) {
+                if (isInsideUsagi(mx, my)) {
+                    spawnParticles(mx, my);
+                    statusLabel.textContent = '✨ ¡Magia de Usagi! ✨';
+                    setTimeout(() => {
+                        if (flameFade > 0.5) statusLabel.textContent = '🎂 Toca a Usagi o a la llama';
+                    }, 1200);
+                    return;
+                }
+            }
+
+            // Verificar clic en la llama (si está encendida)
+            if (flameProgress >= 1 && flameFade > 0.5) {
+                if (isInsideFlame(mx, my)) {
+                    // Apagar llama con animación
+                    flameFade = 0.1; // casi apagada
+                    flameOffTimer = null; // cancelamos auto-reavivado si lo hubiera
+                    statusLabel.textContent = '💨 ¡Soplaste la vela! Se reavivará en 3s';
+                    // Programar reavivado
+                    clearTimeout(flameOffTimer);
+                    flameOffTimer = setTimeout(() => {
+                        flameFade = 1;
+                        flameOffTimer = null;
+                        statusLabel.textContent = '🕯️ ¡La llama volvió!';
+                        setTimeout(() => {
+                            if (usagiDrawn) statusLabel.textContent = '🎂 Toca a Usagi o a la llama';
+                        }, 1500);
+                    }, 3000);
+                    return;
+                }
+            }
+        });
+
+        // Doble clic para reiniciar todo
+        canvas.addEventListener('dblclick', () => {
+            if (animFrame) cancelAnimationFrame(animFrame);
+            startTime = performance.now();
+            isComplete = false;
+            usagiDrawn = false;
+            usagiProgress = 0;
+            flameProgress = 0;
+            flameFade = 1;
+            flameOffTimer = null;
+            particles = [];
+            statusLabel.textContent = '✏️ dibujando...';
+            statusLabel.style.color = '#b5aa99';
+            animate(performance.now());
+        });
+
+        // ============================================================
+        // 9. RESPONSIVE
+        // ============================================================
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxW = window.innerWidth - 32;
+            const maxH = window.innerHeight - 32;
+            const containerSize = Math.min(maxW, maxH, 600);
+            canvas.style.width = containerSize + 'px';
+            canvas.style.height = containerSize + 'px';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Ajustes para móvil
+        if (window.innerWidth < 500) {
+            document.querySelector('.status').style.fontSize = '0.6rem';
+        }
+
+        // Iniciar
+        animate(performance.now());
+
+        window.addEventListener('beforeunload', () => {
+            if (animFrame) cancelAnimationFrame(animFrame);
+        });
+        console.log('🎂 Pastel + Chiikawa cargado. ¡Doble clic para reiniciar!');
     })();
 </script>
 </body>
