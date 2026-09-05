@@ -3,276 +3,524 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>🎨 Pastel Dibujado 3D</title>
+    <title>✏️ Pastel a Lápiz · Feliz Cumple</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif; background: #fcf9f2; }
-        #info {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f7f3eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Poppins', 'Comic Sans MS', cursive, sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            background: #fcf9f2;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.03);
+            padding: 20px;
+            position: relative;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            background: #fcf9f2;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+            touch-action: none;
+            cursor: default;
+        }
+
+        /* Capa de texto superpuesta (para que sea más "Ins") */
+        .text-overlay {
             position: absolute;
-            top: 20px;
+            bottom: 40px;
             left: 0;
             width: 100%;
             text-align: center;
             pointer-events: none;
             z-index: 10;
-            padding: 0 16px;
-            box-sizing: border-box;
+            padding: 0 20px;
+            transition: opacity 1s ease;
         }
-        #info h1 {
-            font-size: clamp(2.5rem, 9vw, 4.5rem);
+        .text-overlay h1 {
+            font-size: clamp(1.8rem, 7vw, 3.8rem);
+            font-weight: 800;
+            color: #2d2a24;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 12px rgba(255, 215, 215, 0.3);
             margin: 0;
-            color: #2c3e50;
-            text-shadow: 4px 4px 0 #f1c40f, 6px 6px 0 rgba(0,0,0,0.1);
-            letter-spacing: 2px;
-            font-weight: 900;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards;
+            animation-delay: 3.8s;
         }
-        #info p {
-            font-size: clamp(1rem, 3vw, 1.6rem);
-            margin: 8px 0 0;
-            color: #2c3e50;
-            background: rgba(255, 255, 255, 0.6);
+        .text-overlay p {
+            font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+            color: #7a6e5d;
+            font-weight: 400;
+            letter-spacing: 3px;
+            margin-top: 4px;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards;
+            animation-delay: 4.2s;
+            background: rgba(255, 255, 255, 0.5);
             display: inline-block;
-            padding: 4px 18px;
-            border-radius: 30px;
-            font-weight: bold;
-            border: 2px dashed #2c3e50;
+            padding: 4px 20px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
         }
-        #credit {
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estado de carga (mientras se dibuja) */
+        .status {
             position: absolute;
-            bottom: 16px;
-            right: 20px;
-            color: rgba(44, 62, 80, 0.3);
-            font-size: 0.9rem;
-            z-index: 10;
+            top: 20px;
+            right: 24px;
+            font-size: 0.8rem;
+            color: #b5aa99;
+            letter-spacing: 2px;
+            font-weight: 300;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 4px 14px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            z-index: 20;
+            border: 1px solid rgba(0,0,0,0.02);
             pointer-events: none;
-            font-weight: bold;
+        }
+
+        @media (max-width: 500px) {
+            .container { padding: 12px; border-radius: 20px; }
+            .text-overlay { bottom: 24px; }
+            .status { top: 12px; right: 16px; font-size: 0.6rem; padding: 2px 10px; }
         }
     </style>
 </head>
 <body>
-    <div id="info">
-        <h1>✏️ ¡Feliz Cumple! ✏️</h1>
-        <p>🎨 Coloreado a mano con mucho cariño 🎨</p>
+
+<div class="container">
+    <canvas id="sketchCanvas" width="800" height="800"></canvas>
+    <div class="text-overlay">
+        <h1>✨ ¡Feliz Cumple! ✨</h1>
+        <p>🎂 Dibujado con lápiz y mucho amor 🎂</p>
     </div>
-    <div id="credit">✧ Estilo Boceto</div>
+    <div class="status" id="statusLabel">✏️ dibujando...</div>
+</div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+<script>
+    (function() {
+        const canvas = document.getElementById('sketchCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusLabel = document.getElementById('statusLabel');
+
+        // --- Dimensiones reales (siempre cuadrado para evitar deformaciones) ---
+        const size = 800;
+        canvas.width = size;
+        canvas.height = size;
+
+        // --- Centro y escalado ---
+        const cx = size / 2;
+        const baseY = size * 0.72; // base del pastel
+        const scale = Math.min(1, size / 800);
+
+        // --- Colores de lápiz ---
+        const PENCIL = '#2b2a27';
+        const PENCIL_LIGHT = '#5a554a';
+        const PAPER = '#fcf9f2';
+
+        // --- 1. DEFINICIÓN DE TRAZOS (cada trazo es una serie de puntos [x, y]) ---
+        // Para simular el trazo a mano, añadiremos pequeñas vibraciones en la función de dibujo.
+        // Aquí definimos las rutas "limpias".
+        const paths = [];
+
+        // Helper: añadir un rectángulo (4 lados)
+        function addRect(x, y, w, h) {
+            // Empezamos desde la esquina superior izquierda, en sentido horario
+            paths.push([
+                [x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]
+            ]);
+        }
+
+        // Helper: añadir línea simple
+        function addLine(x1, y1, x2, y2) {
+            paths.push([
+                [x1, y1], [x2, y2]
+            ]);
+        }
+
+        // Helper: arco / curva simple (aproximado con segmentos)
+        function addCurve(centerX, centerY, radius, startAngle, endAngle, segments = 10) {
+            const pts = [];
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const angle = startAngle + (endAngle - startAngle) * t;
+                pts.push([
+                    centerX + radius * Math.cos(angle),
+                    centerY + radius * Math.sin(angle)
+                ]);
+            }
+            paths.push(pts);
+        }
+
+        // ----- CAPAS DEL PASTEL (de abajo hacia arriba) -----
+        const w1 = 300, h1 = 70; // base
+        const w2 = 250, h2 = 60; // medio
+        const w3 = 200, h3 = 50; // superior
+
+        const x1 = cx - w1/2, y1 = baseY - h1;
+        const x2 = cx - w2/2, y2 = y1 - h2;
+        const x3 = cx - w3/2, y3 = y2 - h3;
+
+        // 1. Base
+        addRect(x1, y1, w1, h1);
+        // 2. Capa media
+        addRect(x2, y2, w2, h2);
+        // 3. Capa superior
+        addRect(x3, y3, w3, h3);
+
+        // ----- CREMA / ADORNOS (ondas en la parte superior de cada capa) -----
+        // Creamos ondas en la capa superior (y3)
+        const creamY = y3;
+        const creamPts = [];
+        const startX = x3 + 10;
+        const endX = x3 + w3 - 10;
+        const steps = 16;
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const x = startX + t * (endX - startX);
+            const wave = Math.sin(t * Math.PI * 4) * 8;
+            creamPts.push([x, creamY + wave - 4]);
+        }
+        paths.push(creamPts);
+
+        // Pequeños puntos de crema (círculos) en la capa superior
+        for (let i = 0; i < 8; i++) {
+            const t = (i + 0.5) / 8;
+            const x = startX + t * (endX - startX);
+            const y = creamY + Math.sin(t * Math.PI * 4) * 8 - 6;
+            // Dibujamos un círculo pequeño con 6 puntos
+            const pts = [];
+            const r = 6;
+            for (let j = 0; j <= 8; j++) {
+                const ang = (j / 8) * Math.PI * 2;
+                pts.push([x + r * Math.cos(ang), y + r * Math.sin(ang)]);
+            }
+            paths.push(pts);
+        }
+
+        // ----- VELA -----
+        const candleW = 24, candleH = 90;
+        const candleX = cx - candleW/2;
+        const candleY = y3 - candleH + 8; // un poco hundida en la crema
+
+        addRect(candleX, candleY, candleW, candleH);
+
+        // Rayas decorativas de la vela (3 líneas horizontales)
+        for (let i = 1; i <= 3; i++) {
+            const yRay = candleY + (i / 4) * candleH;
+            addLine(candleX + 4, yRay, candleX + candleW - 4, yRay);
+        }
+
+        // ----- MECHA (pequeña línea) -----
+        const wickX = cx;
+        const wickY = candleY - 4;
+        addLine(wickX, wickY, wickX, wickY - 14);
+
+        // ---- (La llama se dibujará después de completar el boceto) ----
+
+        // Guardamos el número total de trazos
+        const totalPaths = paths.length;
+
+        // --- 2. FUNCIÓN DE DIBUJO CON EFECTO "LÁPIZ" ---
+        function drawPath(pts, progress, color = PENCIL, lineWidth = 2.2) {
+            if (pts.length < 2) return;
+
+            // Calculamos cuántos segmentos dibujar según el progreso
+            const totalSegments = pts.length - 1;
+            const drawSegments = Math.floor(progress * totalSegments);
+            const frac = (progress * totalSegments) - drawSegments;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Pequeña sombra de lápiz (opcional)
+            ctx.shadowColor = 'rgba(0,0,0,0.02)';
+            ctx.shadowBlur = 2;
+
+            for (let i = 0; i < drawSegments && i < totalSegments; i++) {
+                const p1 = pts[i];
+                const p2 = pts[i + 1];
+                // Añadir micro-vibración para efecto "mano alzada"
+                const vib = 0.6; // intensidad de la vibración
+                const noiseX = (Math.random() - 0.5) * vib;
+                const noiseY = (Math.random() - 0.5) * vib;
+
+                ctx.beginPath();
+                ctx.moveTo(p1[0] + (i === 0 ? 0 : noiseX * 0.5), p1[1] + (i === 0 ? 0 : noiseY * 0.5));
+                const endX = p2[0] + noiseX;
+                const endY = p2[1] + noiseY;
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
+
+            // Dibujar la última porción fraccional
+            if (drawSegments < totalSegments && frac > 0.01) {
+                const p1 = pts[drawSegments];
+                const p2 = pts[drawSegments + 1];
+                const fracX = p1[0] + (p2[0] - p1[0]) * frac;
+                const fracY = p1[1] + (p2[1] - p1[1]) * frac;
+                ctx.beginPath();
+                ctx.moveTo(p1[0], p1[1]);
+                ctx.lineTo(fracX + (Math.random() - 0.5) * 0.8, fracY + (Math.random() - 0.5) * 0.8);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        // --- 3. FUNCIÓN PARA DIBUJAR LA LLAMA (al final) ---
+        function drawFlame(progress, flicker = 0) {
+            const fx = cx;
+            const fy = wickY - 14; // punto superior de la mecha
+
+            // Si progress es 0, no dibujamos nada.
+            if (progress <= 0) return;
+
+            // Tamaño de la llama
+            const baseH = 50;
+            const baseW = 28;
+            const flick = 1 + 0.08 * Math.sin(flicker * 4) + 0.04 * Math.sin(flicker * 7);
+            const h = baseH * flick * progress;
+            const w = baseW * (0.7 + 0.3 * progress) * flick;
+
+            // 1. Resplandor exterior (muy suave, estilo "Ins")
+            if (progress > 0.5) {
+                const glowIntensity = (progress - 0.5) * 2;
+                const grad = ctx.createRadialGradient(fx, fy - h * 0.3, 0, fx, fy - h * 0.3, w * 1.6);
+                grad.addColorStop(0, `rgba(255, 220, 150, ${0.3 * glowIntensity})`);
+                grad.addColorStop(0.4, `rgba(255, 180, 80, ${0.15 * glowIntensity})`);
+                grad.addColorStop(1, `rgba(255, 150, 50, 0)`);
+                ctx.save();
+                ctx.fillStyle = grad;
+                ctx.shadowColor = 'transparent';
+                ctx.beginPath();
+                ctx.arc(fx, fy - h * 0.3, w * 1.6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // 2. Llama exterior (amarilla/naranja)
+            const grad2 = ctx.createRadialGradient(fx, fy - h * 0.2, 0, fx, fy - h * 0.3, w);
+            grad2.addColorStop(0, 'rgba(255, 255, 200, 0.9)');
+            grad2.addColorStop(0.3, 'rgba(255, 200, 80, 0.9)');
+            grad2.addColorStop(0.7, 'rgba(255, 140, 30, 0.8)');
+            grad2.addColorStop(1, 'rgba(200, 80, 0, 0)');
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(255, 150, 50, 0.3)';
+            ctx.shadowBlur = 30;
+
+            ctx.beginPath();
+            // Forma de gota / llama
+            ctx.moveTo(fx, fy - h);
+            ctx.bezierCurveTo(fx + w * 0.9, fy - h * 0.4, fx + w * 0.5, fy + h * 0.1, fx, fy + h * 0.1);
+            ctx.bezierCurveTo(fx - w * 0.5, fy + h * 0.1, fx - w * 0.9, fy - h * 0.4, fx, fy - h);
+            ctx.closePath();
+
+            ctx.fillStyle = grad2;
+            ctx.fill();
+            ctx.restore();
+
+            // 3. Llama interior (blanca/amarilla brillante)
+            if (progress > 0.7) {
+                const p2 = (progress - 0.7) / 0.3;
+                const h2 = h * 0.5 * p2;
+                const w2 = w * 0.4 * p2;
+                ctx.save();
+                ctx.shadowColor = 'rgba(255, 200, 100, 0.5)';
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.moveTo(fx, fy - h2 - 4);
+                ctx.bezierCurveTo(fx + w2 * 0.8, fy - h2 * 0.4, fx + w2 * 0.4, fy + h2 * 0.1, fx, fy + h2 * 0.1);
+                ctx.bezierCurveTo(fx - w2 * 0.4, fy + h2 * 0.1, fx - w2 * 0.8, fy - h2 * 0.4, fx, fy - h2 - 4);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // 4. Línea de lápiz de la llama (contorno) - para mantener el estilo sketch
+            if (progress < 0.9) {
+                const pencilProgress = progress / 0.9;
+                ctx.save();
+                ctx.strokeStyle = PENCIL;
+                ctx.lineWidth = 1.5;
+                ctx.globalAlpha = Math.min(1, pencilProgress * 1.5);
+                ctx.beginPath();
+                ctx.moveTo(fx, fy - h * pencilProgress);
+                ctx.bezierCurveTo(fx + w * 0.8 * pencilProgress, fy - h * 0.4 * pencilProgress, fx + w * 0.4 * pencilProgress, fy + h * 0.1 * pencilProgress, fx, fy + h * 0.1 * pencilProgress);
+                ctx.bezierCurveTo(fx - w * 0.4 * pencilProgress, fy + h * 0.1 * pencilProgress, fx - w * 0.8 * pencilProgress, fy - h * 0.4 * pencilProgress, fx, fy - h * pencilProgress);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
             }
         }
-    </script>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        // --- 4. BUCLE PRINCIPAL DE ANIMACIÓN ---
+        let startTime = performance.now();
+        const DRAW_DURATION = 4500; // 4.5 segundos para dibujar todo
+        let isComplete = false;
+        let animFrame;
 
-        // --- Escena (fondo color papel) ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xfcf9f2);
+        function animate(now) {
+            const elapsed = now - startTime;
+            let progress = Math.min(1, elapsed / DRAW_DURATION);
 
-        // --- Cámara ---
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(4, 3.5, 7);
-        camera.lookAt(0, 1.5, 0);
-
-        // --- Renderer ---
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
-
-        // --- Controles ---
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.target.set(0, 1.5, 0);
-        controls.enableDamping = true;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.2;
-        controls.enableZoom = true;
-
-        // --- Luces (muy planas para que parezca dibujo) ---
-        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambient);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(1, 2, 1);
-        scene.add(dirLight);
-        const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
-        backLight.position.set(-1, 0.5, -1);
-        scene.add(backLight);
-
-        // --- Suelo (estilo papel) ---
-        const groundMat = new THREE.MeshStandardMaterial({
-            color: 0xf0ece1,
-            roughness: 1,
-            metalness: 0,
-            transparent: true,
-            opacity: 0.4
-        });
-        const ground = new THREE.Mesh(new THREE.CircleGeometry(3.5, 32), groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.05;
-        ground.receiveShadow = false;
-        scene.add(ground);
-
-        // --- FUNCIÓN para crear piezas CON BORDES NEGROS ---
-        function createOutlinedMesh(geometry, material, posX, posY, posZ, rotX = 0, rotY = 0, rotZ = 0) {
-            const group = new THREE.Group();
+            // Limpiar canvas con fondo de papel
+            ctx.clearRect(0, 0, size, size);
             
-            // Malla rellena
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
+            // Fondo con textura sutil de papel
+            ctx.fillStyle = PAPER;
+            ctx.fillRect(0, 0, size, size);
             
-            // Bordes negros (líneas)
-            const edges = new THREE.EdgesGeometry(geometry);
-            const lineMat = new THREE.LineBasicMaterial({ color: 0x1a1a1a, linewidth: 2 });
-            const wireframe = new THREE.LineSegments(edges, lineMat);
-            
-            group.add(mesh);
-            group.add(wireframe);
-            
-            group.position.set(posX, posY, posZ);
-            group.rotation.set(rotX, rotY, rotZ);
-            return group;
-        }
-
-        // --- Pastel (colores primarios / vivos para colorear) ---
-        const cakeGroup = new THREE.Group();
-        const colors = [0xe74c3c, 0xf1c40f, 0x3498db]; // Rojo, Amarillo, Azul
-        const heights = [0.8, 0.7, 0.6];
-        const radii = [1.5, 1.3, 1.1];
-
-        for (let i = 0; i < 3; i++) {
-            const geo = new THREE.CylinderGeometry(radii[i], radii[i], heights[i], 24);
-            const mat = new THREE.MeshToonMaterial({
-                color: colors[i],
-                roughness: 0.6,
-                flatShading: false
-            });
-            
-            let yPos = 0;
-            for (let j = 0; j < i; j++) yPos += heights[j];
-            const yCenter = yPos + heights[i] / 2;
-            
-            const layerGroup = createOutlinedMesh(geo, mat, 0, yCenter, 0);
-            cakeGroup.add(layerGroup);
-
-            // Cremas (con bordes también)
-            const creamCount = 10;
-            for (let k = 0; k < creamCount; k++) {
-                const angle = (k / creamCount) * Math.PI * 2;
-                const radius = radii[i] * 0.85;
-                const creamGeo = new THREE.SphereGeometry(0.08 + (i === 2 ? 0.12 : 0.07), 8);
-                const creamMat = new THREE.MeshToonMaterial({ color: 0xffffff, roughness: 0.8 });
-                const creamGroup = createOutlinedMesh(
-                    creamGeo, creamMat,
-                    Math.cos(angle) * radius,
-                    yPos + heights[i] - 0.02,
-                    Math.sin(angle) * radius
-                );
-                cakeGroup.add(creamGroup);
+            // Añadir grano de papel (muy sutil)
+            ctx.save();
+            ctx.globalAlpha = 0.04;
+            for (let i = 0; i < 300; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const r = Math.random() * 1.5;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fillStyle = '#b5aa99';
+                ctx.fill();
             }
+            ctx.restore();
+
+            // Calcular progreso por trazo (distribución uniforme)
+            const progressPerPath = 1 / totalPaths;
+            
+            // Dibujar cada trazo
+            for (let i = 0; i < totalPaths; i++) {
+                const pathStart = i / totalPaths;
+                const pathEnd = (i + 1) / totalPaths;
+                let pathProgress = 0;
+                if (progress >= pathEnd) {
+                    pathProgress = 1;
+                } else if (progress > pathStart) {
+                    pathProgress = (progress - pathStart) / (1 / totalPaths);
+                } else {
+                    pathProgress = 0;
+                }
+
+                // Los primeros trazos (base) son más oscuros, los últimos (crema) un poco más claros
+                let color = PENCIL;
+                let lineW = 2.2;
+                if (i > totalPaths - 6) { // cremas y detalles
+                    color = PENCIL_LIGHT;
+                    lineW = 1.8;
+                }
+                // La vela y la mecha un poco más oscuros
+                if (i >= totalPaths - 10 && i < totalPaths - 4) {
+                    color = PENCIL;
+                    lineW = 2.0;
+                }
+
+                if (pathProgress > 0) {
+                    drawPath(paths[i], pathProgress, color, lineW);
+                }
+            }
+
+            // --- DIBUJAR LLAMA (después de que el boceto esté completo) ---
+            const sketchComplete = progress >= 1;
+            if (sketchComplete) {
+                // Actualizar estado
+                if (!isComplete) {
+                    isComplete = true;
+                    statusLabel.textContent = '🕯️ encendiendo...';
+                }
+
+                // La llama se enciende gradualmente (0 a 1 en 1 segundo) y luego parpadea
+                const flameStartTime = startTime + DRAW_DURATION;
+                const flameElapsed = now - flameStartTime;
+                let flameProgress = Math.min(1, flameElapsed / 1000); // 1 segundo para encenderse
+                
+                if (flameElapsed > 0) {
+                    // Parpadeo continuo
+                    const flicker = now / 100;
+                    drawFlame(flameProgress, flicker);
+                    
+                    if (flameProgress >= 1) {
+                        statusLabel.textContent = '🎂 ¡Listo!';
+                        statusLabel.style.color = '#b5838d';
+                    }
+                }
+
+            } else {
+                // Mostrar progreso en porcentaje
+                const percent = Math.round(progress * 100);
+                statusLabel.textContent = `✏️ dibujando ${percent}%`;
+            }
+
+            animFrame = requestAnimationFrame(animate);
         }
-        scene.add(cakeGroup);
 
-        // --- Decoraciones dibujadas (estrellas y bolitas) ---
-        const decoMat = new THREE.MeshToonMaterial({ color: 0x2ecc71, roughness: 0.5 });
-        const decoGeo = new THREE.SphereGeometry(0.18, 6);
-        const deco1 = createOutlinedMesh(decoGeo, decoMat, 0.7, 2.15, 0.7);
-        scene.add(deco1);
-        const deco2 = createOutlinedMesh(decoGeo, decoMat, -0.7, 2.1, -0.7);
-        scene.add(deco2);
-        
-        // Corazón simple (usamos un cono + esfera, pero para simplificar, otra esfera rosa)
-        const heartMat = new THREE.MeshToonMaterial({ color: 0xe91e63 });
-        const heartGroup = createOutlinedMesh(new THREE.SphereGeometry(0.15, 6), heartMat, 0, 2.2, -0.9);
-        scene.add(heartGroup);
+        // Iniciar animación
+        animate(performance.now());
 
-        // --- Vela (con líneas negras) ---
-        const candleMat = new THREE.MeshToonMaterial({ color: 0x9b59b6, roughness: 0.5 });
-        const candleGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8);
-        const candleGroup = createOutlinedMesh(candleGeo, candleMat, 0, 2.4, 0);
-        scene.add(candleGroup);
-
-        // Rayas de la vela (con bordes)
-        for (let i = 0; i < 3; i++) {
-            const stripeMat = new THREE.MeshToonMaterial({ color: 0xf1c40f });
-            const stripeGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.05, 8);
-            const stripeGroup = createOutlinedMesh(stripeGeo, stripeMat, 0, 2.1 + i * 0.25, 0);
-            scene.add(stripeGroup);
+        // --- 5. RESPONSIVE / REDIMENSIONADO ---
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxWidth = window.innerWidth - 40;
+            const maxHeight = window.innerHeight - 40;
+            const containerSize = Math.min(maxWidth, maxHeight, 560); // límite para que no se vea enorme
+            const canvasSize = Math.min(containerSize, 800);
+            
+            canvas.style.width = canvasSize + 'px';
+            canvas.style.height = canvasSize + 'px';
         }
 
-        // --- Llama (dibujada, con bordes) ---
-        const flameGroup = new THREE.Group();
-        flameGroup.position.set(0, 2.85, 0);
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        // Llama exterior (cono redondeado)
-        const flameMat = new THREE.MeshToonMaterial({ color: 0xf39c12, emissive: 0xf39c12, emissiveIntensity: 0.1 });
-        const flameGeo = new THREE.ConeGeometry(0.2, 0.4, 8);
-        const flameMesh = createOutlinedMesh(flameGeo, flameMat, 0, 0.2, 0);
-        flameGroup.add(flameMesh);
-
-        // Llama interior (más pequeña)
-        const flameMat2 = new THREE.MeshToonMaterial({ color: 0xe67e22, emissive: 0xe67e22, emissiveIntensity: 0.1 });
-        const flameGeo2 = new THREE.ConeGeometry(0.1, 0.25, 8);
-        const flameMesh2 = createOutlinedMesh(flameGeo2, flameMat2, 0, 0.3, 0);
-        flameGroup.add(flameMesh2);
-
-        scene.add(flameGroup);
-
-        // --- Estrellitas flotantes (también con bordes) ---
-        const starGroup = new THREE.Group();
-        for (let i = 0; i < 25; i++) {
-            const size = 0.06 + Math.random() * 0.1;
-            const starMat = new THREE.MeshToonMaterial({ 
-                color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6) 
-            });
-            const starGeo = new THREE.OctahedronGeometry(size);
-            const sGroup = createOutlinedMesh(
-                starGeo, starMat,
-                (Math.random() - 0.5) * 6,
-                Math.random() * 4,
-                (Math.random() - 0.5) * 6
-            );
-            sGroup.userData = { speed: 0.2 + Math.random() * 0.3, angle: Math.random() * Math.PI * 2 };
-            starGroup.add(sGroup);
+        // Pequeño ajuste para móviles: si el canvas es muy pequeño, ajustar la fuente del estado
+        if (window.innerWidth < 500) {
+            document.querySelector('.status').style.fontSize = '0.6rem';
         }
-        scene.add(starGroup);
 
-        // --- Animación ---
-        const clock = new THREE.Clock();
-        function animate() {
-            const delta = clock.getDelta();
-            controls.update();
-
-            // Parpadeo y escala de la llama (manteniendo los bordes)
-            const flicker = 0.9 + Math.random() * 0.2;
-            flameGroup.scale.set(flicker, 1 + Math.random() * 0.15, flicker);
-
-            // Rotación de estrellas
-            starGroup.children.forEach(child => {
-                child.rotation.x += delta * child.userData.speed;
-                child.rotation.y += delta * child.userData.speed * 0.5;
-            });
-
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        // --- Responsive ---
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // Cleanup (por si el componente se desmonta)
+        window.addEventListener('beforeunload', () => {
+            if (animFrame) cancelAnimationFrame(animFrame);
         });
-        if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-            camera.position.set(3.5, 2.5, 5.5);
-            controls.target.set(0, 1.2, 0);
-        }
-    </script>
+
+        // También permitir reiniciar con doble click (bonus)
+        canvas.addEventListener('dblclick', () => {
+            // Reiniciar animación
+            if (animFrame) cancelAnimationFrame(animFrame);
+            startTime = performance.now();
+            isComplete = false;
+            statusLabel.textContent = '✏️ dibujando...';
+            statusLabel.style.color = '#b5aa99';
+            animate(performance.now());
+        });
+
+        console.log('✏️ Pastel a lápiz cargado. ¡Doble click para reiniciar el dibujo!');
+    })();
+</script>
 </body>
 </html>
