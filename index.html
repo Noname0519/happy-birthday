@@ -531,8 +531,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>✏️ Pastel + Chiikawa · Feliz Cumple</title>
+    <title>🎂 Pikachu · Pastel a Lápiz</title>
     <style>
+        /* --- Estilos generales --- */
         * {
             margin: 0;
             padding: 0;
@@ -569,7 +570,7 @@
             cursor: pointer;
             box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
         }
-        /* Texto superpuesto */
+        /* --- Texto superpuesto --- */
         .text-overlay {
             position: absolute;
             bottom: 30px;
@@ -579,7 +580,6 @@
             pointer-events: none;
             z-index: 10;
             padding: 0 16px;
-            transition: opacity 1s ease;
         }
         .text-overlay h1 {
             font-size: clamp(1.6rem, 6vw, 3.4rem);
@@ -590,7 +590,7 @@
             margin: 0;
             opacity: 0;
             animation: fadeUp 1s ease forwards;
-            animation-delay: 4s;
+            animation-delay: 5.5s;
         }
         .text-overlay p {
             font-size: clamp(0.8rem, 2.2vw, 1.2rem);
@@ -600,7 +600,7 @@
             margin-top: 2px;
             opacity: 0;
             animation: fadeUp 1s ease forwards;
-            animation-delay: 4.4s;
+            animation-delay: 6s;
             background: rgba(255, 255, 255, 0.4);
             display: inline-block;
             padding: 2px 18px;
@@ -611,6 +611,7 @@
             0% { opacity: 0; transform: translateY(10px); }
             100% { opacity: 1; transform: translateY(0); }
         }
+        /* --- Barra de estado --- */
         .status {
             position: absolute;
             top: 16px;
@@ -655,10 +656,10 @@
     <canvas id="sketchCanvas" width="800" height="800"></canvas>
     <div class="text-overlay">
         <h1>🎉 ¡Feliz Cumple! 🎉</h1>
-        <p>🐰 Usagi y el pastel te desean lo mejor</p>
+        <p>⚡ Pikachu y el pastel te desean lo mejor ⚡</p>
     </div>
-    <div class="status" id="statusLabel">✏️ dibujando...</div>
-    <div class="hint">💡 Toca a Usagi o a la llama · doble toque para reiniciar</div>
+    <div class="status" id="statusLabel">✏️ dibujando pastel...</div>
+    <div class="hint">💡 Toca la llama para encenderla · doble toque para reiniciar</div>
 </div>
 
 <script>
@@ -680,33 +681,63 @@
         const PENCIL = '#2b2a27';
         const PENCIL_LIGHT = '#5a554a';
         const PAPER = '#fcf9f2';
+        const PIKA_YELLOW = '#FFDE21';
+        const PIKA_CHEEK = '#FF6B6B';
+        const PIKA_RED = '#FF0000';
+        const PIKA_BROWN = '#6B4F3C';
 
         // ============================================================
-        // 1. DEFINICIÓN DE LOS TRAZOS DEL PASTEL (igual que antes)
+        // 1. DEFINICIÓN DE TRAZOS (Pastel + Vela + Pikachu)
         // ============================================================
+        // Cada trazo es un array de puntos [x, y]
+        // Para trazos que son curvas, usamos muchos puntos para suavizar
         const paths = [];
 
+        // ---- Helper: añadir un rectángulo ----
         function addRect(x, y, w, h) {
             paths.push([
                 [x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]
             ]);
         }
+
+        // ---- Helper: añadir una línea ----
         function addLine(x1, y1, x2, y2) {
             paths.push([
                 [x1, y1], [x2, y2]
             ]);
         }
-        function addCurve(cx, cy, r, startA, endA, seg = 10) {
+
+        // ---- Helper: añadir curva de Bézier (aproximada con segmentos) ----
+        function addBezier(pts, segments = 20) {
+            if (pts.length < 4) return;
+            const result = [];
+            // Algoritmo de Casteljau simplificado para 4 puntos de control
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const mt = 1 - t;
+                // B(t) = (1-t)^3 * P0 + 3*(1-t)^2*t * P1 + 3*(1-t)*t^2 * P2 + t^3 * P3
+                const x = mt*mt*mt * pts[0][0] + 3*mt*mt*t * pts[1][0] + 3*mt*t*t * pts[2][0] + t*t*t * pts[3][0];
+                const y = mt*mt*mt * pts[0][1] + 3*mt*mt*t * pts[1][1] + 3*mt*t*t * pts[2][1] + t*t*t * pts[3][1];
+                result.push([x, y]);
+            }
+            paths.push(result);
+        }
+
+        // ---- Helper: añadir arco/círculo ----
+        function addArc(cx, cy, r, startAngle, endAngle, segments = 16) {
             const pts = [];
-            for (let i = 0; i <= seg; i++) {
-                const t = i / seg;
-                const a = startA + (endA - startA) * t;
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const a = startAngle + (endAngle - startAngle) * t;
                 pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
             }
             paths.push(pts);
         }
 
-        // Capas del pastel
+        // ============================================================
+        // 2. TRAZOS DEL PASTEL
+        // ============================================================
+        // Capas del pastel (de abajo hacia arriba)
         const w1 = 300, h1 = 70;
         const w2 = 250, h2 = 60;
         const w3 = 200, h3 = 50;
@@ -717,7 +748,7 @@
         addRect(x2, y2, w2, h2);
         addRect(x3, y3, w3, h3);
 
-        // Crema superior
+        // Crema superior (onda)
         const creamY = y3;
         const startX = x3 + 10, endX = x3 + w3 - 10;
         const creamPts = [];
@@ -758,10 +789,135 @@
         const wickY = candleY - 4;
         addLine(wickX, wickY, wickX, wickY - 14);
 
+        // ============================================================
+        // 3. TRAZOS DE PIKACHU (a la izquierda del pastel)
+        // ============================================================
+        // Posición base de Pikachu
+        const pikaX = cx - 210;
+        const pikaY = y3 + 10;
+        const s = 0.9; // escala general
+
+        // ---- Cabeza (círculo) ----
+        const headR = 70 * s;
+        addArc(pikaX, pikaY - 10 * s, headR, 0, Math.PI * 2, 24);
+
+        // ---- Oreja izquierda ----
+        const earL = [
+            [pikaX - 40 * s, pikaY - 50 * s],
+            [pikaX - 65 * s, pikaY - 110 * s],
+            [pikaX - 45 * s, pikaY - 125 * s],
+            [pikaX - 20 * s, pikaY - 60 * s]
+        ];
+        addBezier(earL, 16);
+
+        // ---- Oreja derecha ----
+        const earR = [
+            [pikaX + 40 * s, pikaY - 50 * s],
+            [pikaX + 65 * s, pikaY - 110 * s],
+            [pikaX + 45 * s, pikaY - 125 * s],
+            [pikaX + 20 * s, pikaY - 60 * s]
+        ];
+        addBezier(earR, 16);
+
+        // ---- Cuerpo (forma de pera) ----
+        const body = [
+            [pikaX - 50 * s, pikaY + 20 * s],
+            [pikaX - 65 * s, pikaY + 70 * s],
+            [pikaX - 40 * s, pikaY + 120 * s],
+            [pikaX, pikaY + 135 * s],
+            [pikaX + 40 * s, pikaY + 120 * s],
+            [pikaX + 65 * s, pikaY + 70 * s],
+            [pikaX + 50 * s, pikaY + 20 * s]
+        ];
+        // Convertir a trazo cerrado
+        const bodyPts = [];
+        for (let i = 0; i < body.length; i++) {
+            bodyPts.push(body[i]);
+        }
+        bodyPts.push(body[0]); // cerrar
+        paths.push(bodyPts);
+
+        // ---- Cola (rayo) ----
+        const tail = [
+            [pikaX + 55 * s, pikaY + 100 * s],
+            [pikaX + 95 * s, pikaY + 85 * s],
+            [pikaX + 115 * s, pikaY + 55 * s],
+            [pikaX + 100 * s, pikaY + 45 * s],
+            [pikaX + 85 * s, pikaY + 65 * s],
+            [pikaX + 75 * s, pikaY + 75 * s],
+            [pikaX + 60 * s, pikaY + 90 * s]
+        ];
+        paths.push(tail);
+
+        // ---- Ojos ----
+        // Ojo izquierdo
+        addArc(pikaX - 28 * s, pikaY - 18 * s, 14 * s, 0, Math.PI * 2, 12);
+        // Ojo derecho
+        addArc(pikaX + 28 * s, pikaY - 18 * s, 14 * s, 0, Math.PI * 2, 12);
+        // Brillos de ojos (pequeños círculos)
+        addArc(pikaX - 34 * s, pikaY - 24 * s, 5 * s, 0, Math.PI * 2, 8);
+        addArc(pikaX + 22 * s, pikaY - 24 * s, 5 * s, 0, Math.PI * 2, 8);
+
+        // ---- Mejillas ----
+        addArc(pikaX - 48 * s, pikaY + 10 * s, 14 * s, 0, Math.PI * 2, 12);
+        addArc(pikaX + 48 * s, pikaY + 10 * s, 14 * s, 0, Math.PI * 2, 12);
+
+        // ---- Nariz (pequeño triángulo redondeado) ----
+        const nose = [
+            [pikaX - 4 * s, pikaY - 2 * s],
+            [pikaX, pikaY - 10 * s],
+            [pikaX + 4 * s, pikaY - 2 * s],
+            [pikaX - 4 * s, pikaY - 2 * s]
+        ];
+        paths.push(nose);
+
+        // ---- Boca (sonrisa) ----
+        const mouth = [
+            [pikaX - 18 * s, pikaY + 6 * s],
+            [pikaX - 10 * s, pikaY + 14 * s],
+            [pikaX, pikaY + 18 * s],
+            [pikaX + 10 * s, pikaY + 14 * s],
+            [pikaX + 18 * s, pikaY + 6 * s]
+        ];
+        paths.push(mouth);
+
+        // ---- Patas (simples líneas curvas) ----
+        // Pata izquierda
+        const legL = [
+            [pikaX - 30 * s, pikaY + 130 * s],
+            [pikaX - 35 * s, pikaY + 155 * s],
+            [pikaX - 20 * s, pikaY + 160 * s]
+        ];
+        paths.push(legL);
+        // Pata derecha
+        const legR = [
+            [pikaX + 30 * s, pikaY + 130 * s],
+            [pikaX + 35 * s, pikaY + 155 * s],
+            [pikaX + 20 * s, pikaY + 160 * s]
+        ];
+        paths.push(legR);
+
+        // ---- Rayas de la espalda (decorativas) ----
+        const stripe1 = [
+            [pikaX - 10 * s, pikaY + 60 * s],
+            [pikaX - 15 * s, pikaY + 80 * s],
+            [pikaX - 5 * s, pikaY + 90 * s]
+        ];
+        paths.push(stripe1);
+        const stripe2 = [
+            [pikaX + 10 * s, pikaY + 60 * s],
+            [pikaX + 15 * s, pikaY + 80 * s],
+            [pikaX + 5 * s, pikaY + 90 * s]
+        ];
+        paths.push(stripe2);
+
+        // ============================================================
+        // 4. CONTEO DE TRAZOS
+        // ============================================================
         const totalPaths = paths.length;
 
         // ============================================================
-        // 2. DIBUJADO DE TRAZOS (con efecto lápiz)
+        // 5. FUNCIÓN PARA DIBUJAR UN TRAZO CON EFECTO LÁPIZ
         // ============================================================
         function drawPath(pts, progress, color = PENCIL, lineWidth = 2.2) {
             if (pts.length < 2) return;
@@ -802,34 +958,178 @@
         }
 
         // ============================================================
-        // 3. DIBUJO DE LA LLAMA (con interacción de apagado)
+        // 6. FUNCIÓN PARA RELLENAR PIKACHU (después de dibujar)
         // ============================================================
-        let flameOn = true;
-        let flameOffTimer = null;
-        let flameFade = 1; // 1 = encendida, 0 = apagada
+        function fillPikachu() {
+            // Relleno del cuerpo
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pikaX - 50 * s, pikaY + 20 * s);
+            ctx.quadraticCurveTo(pikaX - 65 * s, pikaY + 70 * s, pikaX - 40 * s, pikaY + 120 * s);
+            ctx.quadraticCurveTo(pikaX, pikaY + 135 * s, pikaX + 40 * s, pikaY + 120 * s);
+            ctx.quadraticCurveTo(pikaX + 65 * s, pikaY + 70 * s, pikaX + 50 * s, pikaY + 20 * s);
+            ctx.closePath();
+            ctx.fillStyle = PIKA_YELLOW;
+            ctx.shadowColor = 'rgba(0,0,0,0.03)';
+            ctx.shadowBlur = 6;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
 
-        function drawFlame(progress, flicker, opacity = 1) {
-            if (progress <= 0 || flameFade <= 0) return;
+            // Relleno de la cabeza
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX, pikaY - 10 * s, 70 * s, 0, Math.PI * 2);
+            ctx.fillStyle = PIKA_YELLOW;
+            ctx.shadowColor = 'rgba(0,0,0,0.03)';
+            ctx.shadowBlur = 6;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            // Relleno de orejas
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pikaX - 40 * s, pikaY - 50 * s);
+            ctx.quadraticCurveTo(pikaX - 65 * s, pikaY - 110 * s, pikaX - 45 * s, pikaY - 125 * s);
+            ctx.quadraticCurveTo(pikaX - 20 * s, pikaY - 60 * s, pikaX - 40 * s, pikaY - 50 * s);
+            ctx.closePath();
+            ctx.fillStyle = PIKA_YELLOW;
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pikaX + 40 * s, pikaY - 50 * s);
+            ctx.quadraticCurveTo(pikaX + 65 * s, pikaY - 110 * s, pikaX + 45 * s, pikaY - 125 * s);
+            ctx.quadraticCurveTo(pikaX + 20 * s, pikaY - 60 * s, pikaX + 40 * s, pikaY - 50 * s);
+            ctx.closePath();
+            ctx.fillStyle = PIKA_YELLOW;
+            ctx.fill();
+            ctx.restore();
+
+            // Relleno de mejillas
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX - 48 * s, pikaY + 10 * s, 14 * s, 0, Math.PI * 2);
+            ctx.fillStyle = PIKA_CHEEK;
+            ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX + 48 * s, pikaY + 10 * s, 14 * s, 0, Math.PI * 2);
+            ctx.fillStyle = PIKA_CHEEK;
+            ctx.fill();
+            ctx.restore();
+
+            // Relleno de ojos (negro)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX - 28 * s, pikaY - 18 * s, 14 * s, 0, Math.PI * 2);
+            ctx.fillStyle = '#2d2a24';
+            ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX + 28 * s, pikaY - 18 * s, 14 * s, 0, Math.PI * 2);
+            ctx.fillStyle = '#2d2a24';
+            ctx.fill();
+            ctx.restore();
+
+            // Brillo de ojos (blanco)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX - 34 * s, pikaY - 24 * s, 5 * s, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pikaX + 22 * s, pikaY - 24 * s, 5 * s, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.restore();
+
+            // Relleno de la cola
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pikaX + 55 * s, pikaY + 100 * s);
+            ctx.lineTo(pikaX + 95 * s, pikaY + 85 * s);
+            ctx.lineTo(pikaX + 115 * s, pikaY + 55 * s);
+            ctx.lineTo(pikaX + 100 * s, pikaY + 45 * s);
+            ctx.lineTo(pikaX + 85 * s, pikaY + 65 * s);
+            ctx.lineTo(pikaX + 75 * s, pikaY + 75 * s);
+            ctx.lineTo(pikaX + 60 * s, pikaY + 90 * s);
+            ctx.closePath();
+            ctx.fillStyle = PIKA_YELLOW;
+            ctx.fill();
+            ctx.restore();
+
+            // Rayas marrones en la espalda
+            ctx.save();
+            ctx.strokeStyle = PIKA_BROWN;
+            ctx.lineWidth = 4 * s;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(pikaX - 10 * s, pikaY + 60 * s);
+            ctx.lineTo(pikaX - 15 * s, pikaY + 80 * s);
+            ctx.lineTo(pikaX - 5 * s, pikaY + 90 * s);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pikaX + 10 * s, pikaY + 60 * s);
+            ctx.lineTo(pikaX + 15 * s, pikaY + 80 * s);
+            ctx.lineTo(pikaX + 5 * s, pikaY + 90 * s);
+            ctx.stroke();
+            ctx.restore();
+
+            // Punta negra de las orejas
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pikaX - 45 * s, pikaY - 125 * s);
+            ctx.quadraticCurveTo(pikaX - 55 * s, pikaY - 115 * s, pikaX - 50 * s, pikaY - 100 * s);
+            ctx.quadraticCurveTo(pikaX - 40 * s, pikaY - 110 * s, pikaX - 45 * s, pikaY - 125 * s);
+            ctx.closePath();
+            ctx.fillStyle = '#2d2a24';
+            ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pikaX + 45 * s, pikaY - 125 * s);
+            ctx.quadraticCurveTo(pikaX + 55 * s, pikaY - 115 * s, pikaX + 50 * s, pikaY - 100 * s);
+            ctx.quadraticCurveTo(pikaX + 40 * s, pikaY - 110 * s, pikaX + 45 * s, pikaY - 125 * s);
+            ctx.closePath();
+            ctx.fillStyle = '#2d2a24';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // ============================================================
+        // 7. DIBUJO DE LA LLAMA (con interacción de encendido)
+        // ============================================================
+        let flameOn = false;
+        let flameFade = 0; // 0 = apagada, 1 = encendida
+
+        function drawFlame(progress, flicker) {
+            if (flameFade <= 0) return;
             const fx = cx;
             const fy = wickY - 14;
             const baseH = 50;
             const baseW = 28;
             const flick = 1 + 0.08 * Math.sin(flicker * 4) + 0.04 * Math.sin(flicker * 7);
-            const h = baseH * flick * progress * flameFade;
-            const w = baseW * (0.7 + 0.3 * progress) * flick * flameFade;
+            const h = baseH * flick * flameFade;
+            const w = baseW * (0.7 + 0.3 * flameFade) * flick;
 
             // Resplandor
-            if (progress > 0.5 && flameFade > 0.1) {
-                const gi = (progress - 0.5) * 2 * flameFade;
+            if (flameFade > 0.1) {
                 const grad = ctx.createRadialGradient(fx, fy - h*0.3, 0, fx, fy - h*0.3, w*1.6);
-                grad.addColorStop(0, `rgba(255, 220, 150, ${0.3 * gi})`);
-                grad.addColorStop(0.4, `rgba(255, 180, 80, ${0.15 * gi})`);
+                grad.addColorStop(0, `rgba(255, 220, 150, ${0.3 * flameFade})`);
+                grad.addColorStop(0.4, `rgba(255, 180, 80, ${0.15 * flameFade})`);
                 grad.addColorStop(1, `rgba(255, 150, 50, 0)`);
                 ctx.save();
                 ctx.fillStyle = grad;
                 ctx.shadowColor = 'transparent';
                 ctx.beginPath();
-                ctx.arc(fx, fy - h*0.3, w*1.6, 0, Math.PI*2);
+                ctx.arc(fx, fy - h*0.3, w*1.6, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
@@ -853,8 +1153,8 @@
             ctx.restore();
 
             // Llama interior
-            if (progress > 0.7 && flameFade > 0.2) {
-                const p2 = (progress - 0.7) / 0.3 * Math.min(1, flameFade * 1.5);
+            if (flameFade > 0.2) {
+                const p2 = Math.min(1, (flameFade - 0.2) / 0.8);
                 const h2 = h * 0.5 * p2;
                 const w2 = w * 0.4 * p2;
                 ctx.save();
@@ -870,275 +1170,40 @@
                 ctx.restore();
             }
 
-            // Contorno a lápiz (si no está apagada del todo)
-            if (progress < 0.9 && flameFade > 0.1) {
-                const pencilP = progress / 0.9 * Math.min(1, flameFade * 1.2);
-                ctx.save();
-                ctx.strokeStyle = PENCIL;
-                ctx.lineWidth = 1.5;
-                ctx.globalAlpha = Math.min(1, pencilP * 1.5);
-                ctx.beginPath();
-                ctx.moveTo(fx, fy - h * pencilP);
-                ctx.bezierCurveTo(fx + w*0.8 * pencilP, fy - h*0.4 * pencilP, fx + w*0.4 * pencilP, fy + h*0.1 * pencilP, fx, fy + h*0.1 * pencilP);
-                ctx.bezierCurveTo(fx - w*0.4 * pencilP, fy + h*0.1 * pencilP, fx - w*0.8 * pencilP, fy - h*0.4 * pencilP, fx, fy - h * pencilP);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
-
-        // ============================================================
-        // 4. DIBUJO DE CHIIKAWA (USAGI)
-        // ============================================================
-        // Definimos la posición de Usagi: a la izquierda del pastel
-        const usagiX = cx - 180;
-        const usagiY = y3 + 30;
-
-        function drawUsagi(progress, time) {
-            if (progress <= 0) return;
-            const p = Math.min(1, progress);
-
-            // Escala según progreso (para efecto de "dibujo")
-            const s = p;
-            const baseSize = 60 * s;
-            const x = usagiX;
-            const y = usagiY - (1 - p) * 30; // aparece subiendo ligeramente
-
-            // Colores
-            const bodyColor = '#fce4b0'; // amarillo pastel
-            const earColor = '#fce4b0';
-            const innerEar = '#f5d6a8';
-
-            // ---- Función para dibujar el cuerpo con trazo a lápiz y relleno ----
+            // Contorno a lápiz de la llama
             ctx.save();
-
-            // Relleno (solo si p > 0.3 para que se vea el proceso)
-            if (p > 0.3) {
-                ctx.beginPath();
-                // Cabeza (círculo)
-                ctx.ellipse(x, y - 10 * s, 40 * s, 38 * s, 0, 0, Math.PI * 2);
-                // Orejas (dos)
-                // Oreja izquierda
-                ctx.moveTo(x - 18 * s, y - 30 * s);
-                ctx.quadraticCurveTo(x - 35 * s, y - 70 * s, x - 22 * s, y - 75 * s);
-                ctx.quadraticCurveTo(x - 12 * s, y - 70 * s, x - 10 * s, y - 35 * s);
-                // Oreja derecha
-                ctx.moveTo(x + 18 * s, y - 30 * s);
-                ctx.quadraticCurveTo(x + 35 * s, y - 70 * s, x + 22 * s, y - 75 * s);
-                ctx.quadraticCurveTo(x + 12 * s, y - 70 * s, x + 10 * s, y - 35 * s);
-                ctx.closePath();
-                ctx.fillStyle = bodyColor;
-                ctx.shadowColor = 'rgba(0,0,0,0.03)';
-                ctx.shadowBlur = 6;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-
-                // Orejas interiores (solo si p > 0.6)
-                if (p > 0.6) {
-                    ctx.fillStyle = innerEar;
-                    // izquierda
-                    ctx.beginPath();
-                    ctx.ellipse(x - 23 * s, y - 58 * s, 10 * s, 18 * s, -0.2, 0, Math.PI * 2);
-                    ctx.fill();
-                    // derecha
-                    ctx.beginPath();
-                    ctx.ellipse(x + 23 * s, y - 58 * s, 10 * s, 18 * s, 0.2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            // Ojos (si p > 0.7)
-            if (p > 0.7) {
-                const eyeY = y - 15 * s;
-                // Ojos negros con brillo
-                ctx.fillStyle = '#2d2a24';
-                ctx.beginPath();
-                ctx.arc(x - 16 * s, eyeY, 6 * s, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(x + 16 * s, eyeY, 6 * s, 0, Math.PI * 2);
-                ctx.fill();
-                // Brillo
-                ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(x - 19 * s, eyeY - 3 * s, 2.5 * s, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(x + 13 * s, eyeY - 3 * s, 2.5 * s, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Boca (sonrisa) si p > 0.8
-            if (p > 0.8) {
-                ctx.beginPath();
-                ctx.strokeStyle = '#2d2a24';
-                ctx.lineWidth = 1.8 * s;
-                ctx.lineCap = 'round';
-                ctx.arc(x, y + 4 * s, 14 * s, 0.1, Math.PI - 0.1);
-                ctx.stroke();
-            }
-
-            // Trazo a lápiz del contorno (siempre visible, incluso antes del relleno)
             ctx.strokeStyle = PENCIL;
-            ctx.lineWidth = 2.0 * s;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.globalAlpha = Math.min(1, p * 1.2);
-
-            // Cabeza
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = Math.min(1, flameFade * 1.2);
             ctx.beginPath();
-            ctx.ellipse(x, y - 10 * s, 40 * s, 38 * s, 0, 0, Math.PI * 2);
+            ctx.moveTo(fx, fy - h);
+            ctx.bezierCurveTo(fx + w*0.9, fy - h*0.4, fx + w*0.5, fy + h*0.1, fx, fy + h*0.1);
+            ctx.bezierCurveTo(fx - w*0.5, fy + h*0.1, fx - w*0.9, fy - h*0.4, fx, fy - h);
+            ctx.closePath();
             ctx.stroke();
-
-            // Orejas
-            ctx.beginPath();
-            ctx.moveTo(x - 18 * s, y - 30 * s);
-            ctx.quadraticCurveTo(x - 38 * s, y - 72 * s, x - 22 * s, y - 78 * s);
-            ctx.quadraticCurveTo(x - 10 * s, y - 72 * s, x - 10 * s, y - 35 * s);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + 18 * s, y - 30 * s);
-            ctx.quadraticCurveTo(x + 38 * s, y - 72 * s, x + 22 * s, y - 78 * s);
-            ctx.quadraticCurveTo(x + 10 * s, y - 72 * s, x + 10 * s, y - 35 * s);
-            ctx.stroke();
-
-            // Ojos (contorno) si p > 0.7
-            if (p > 0.7) {
-                // solo contorno para mantener estilo lápiz (ya pintados antes)
-            }
-
-            // Sonrisa (contorno)
-            if (p > 0.8) {
-                ctx.beginPath();
-                ctx.arc(x, y + 4 * s, 14 * s, 0.1, Math.PI - 0.1);
-                ctx.stroke();
-            }
-
             ctx.restore();
-
-            // ---- Efecto de parpadeo (si el dibujo ya está completo) ----
-            if (p >= 1 && time) {
-                const blink = Math.sin(time * 0.8) > 0.9; // parpadeo rápido cada ~2s
-                if (blink) {
-                    // Dibujar párpados cerrados (líneas horizontales)
-                    ctx.save();
-                    ctx.strokeStyle = PENCIL;
-                    ctx.lineWidth = 2.5 * s;
-                    ctx.beginPath();
-                    ctx.moveTo(x - 22 * s, y - 15 * s);
-                    ctx.lineTo(x - 10 * s, y - 15 * s);
-                    ctx.moveTo(x + 10 * s, y - 15 * s);
-                    ctx.lineTo(x + 22 * s, y - 15 * s);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-            }
         }
 
         // ============================================================
-        // 5. PARTÍCULAS (estrellas y corazones) al hacer clic en Usagi
+        // 8. DETECCIÓN DE CLIC EN LA LLAMA
         // ============================================================
-        let particles = [];
-
-        function spawnParticles(px, py) {
-            const colors = ['#ffb7b2', '#e2f0cb', '#ffdac1', '#fbc2eb', '#a6c1ee', '#ff9aa2', '#f7dc6f'];
-            for (let i = 0; i < 25; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 1 + Math.random() * 3;
-                const size = 4 + Math.random() * 10;
-                const isHeart = Math.random() > 0.5;
-                particles.push({
-                    x: px,
-                    y: py,
-                    vx: Math.cos(angle) * speed * (0.5 + Math.random()),
-                    vy: Math.sin(angle) * speed * (0.5 + Math.random()) - 1,
-                    life: 1,
-                    decay: 0.008 + Math.random() * 0.015,
-                    size: size,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    isHeart: isHeart,
-                    rotation: Math.random() * Math.PI * 2,
-                    rotSpeed: (Math.random() - 0.5) * 0.1
-                });
-            }
-        }
-
-        function drawParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy += 0.03; // gravedad leve
-                p.life -= p.decay;
-                p.rotation += p.rotSpeed;
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                    continue;
-                }
-                ctx.save();
-                ctx.globalAlpha = p.life * 0.9;
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                ctx.fillStyle = p.color;
-                ctx.shadowColor = 'rgba(255, 180, 150, 0.2)';
-                ctx.shadowBlur = 8;
-                if (p.isHeart) {
-                    // Dibujar corazón simple con dos arcos
-                    const s = p.size / 12;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 3 * s);
-                    ctx.bezierCurveTo(0, -2 * s, -5 * s, -6 * s, -9 * s, -2 * s);
-                    ctx.bezierCurveTo(-12 * s, 0, -6 * s, 6 * s, 0, 10 * s);
-                    ctx.bezierCurveTo(6 * s, 6 * s, 12 * s, 0, 9 * s, -2 * s);
-                    ctx.bezierCurveTo(5 * s, -6 * s, 0, -2 * s, 0, 3 * s);
-                    ctx.fill();
-                } else {
-                    // Estrella de 4 puntas
-                    const s = p.size / 2;
-                    ctx.beginPath();
-                    for (let j = 0; j < 8; j++) {
-                        const r = j % 2 === 0 ? s : s * 0.4;
-                        const a = (j / 8) * Math.PI * 2 - Math.PI / 2;
-                        const px2 = r * Math.cos(a);
-                        const py2 = r * Math.sin(a);
-                        j === 0 ? ctx.moveTo(px2, py2) : ctx.lineTo(px2, py2);
-                    }
-                    ctx.closePath();
-                    ctx.fill();
-                }
-                ctx.restore();
-            }
-        }
-
-        // ============================================================
-        // 6. DETECCIÓN DE CLIC en Usagi y en la llama
-        // ============================================================
-        function isInsideUsagi(mx, my) {
-            const dx = mx - usagiX;
-            const dy = my - (usagiY - 10); // centro aproximado
-            return (dx * dx + dy * dy) < 2500; // radio ~50
-        }
-
         function isInsideFlame(mx, my) {
             const fx = cx;
-            const fy = wickY - 14 - 20; // centro de la llama
+            const fy = wickY - 14 - 20;
             const dx = mx - fx;
             const dy = my - fy;
-            return (dx * dx + dy * dy) < 900; // radio ~30
+            return (dx * dx + dy * dy) < 900;
         }
 
         // ============================================================
-        // 7. BUCLE PRINCIPAL DE ANIMACIÓN
+        // 9. BUCLE PRINCIPAL DE ANIMACIÓN
         // ============================================================
         let startTime = performance.now();
         const DRAW_DURATION = 4500;
         let isComplete = false;
-        let usagiDrawn = false;
-        let usagiProgress = 0;
+        let pikaDrawn = false;
         let animFrame;
-
-        // Variables para el estado de la llama
-        let flameProgress = 0;
+        let flameClickable = false;
 
         function animate(now) {
             const elapsed = now - startTime;
@@ -1163,7 +1228,7 @@
             }
             ctx.restore();
 
-            // Dibujar trazos del pastel
+            // Dibujar trazos
             const progressPerPath = 1 / totalPaths;
             for (let i = 0; i < totalPaths; i++) {
                 const pathStart = i / totalPaths;
@@ -1173,8 +1238,10 @@
                 else if (progress > pathStart) pathProgress = (progress - pathStart) / (1 / totalPaths);
                 let color = PENCIL;
                 let lineW = 2.2;
-                if (i > totalPaths - 6) { color = PENCIL_LIGHT; lineW = 1.8; }
-                if (i >= totalPaths - 10 && i < totalPaths - 4) { color = PENCIL; lineW = 2.0; }
+                if (i > totalPaths - 20) { // trazos de Pikachu más suaves
+                    color = PENCIL_LIGHT;
+                    lineW = 1.8;
+                }
                 if (pathProgress > 0) drawPath(paths[i], pathProgress, color, lineW);
             }
 
@@ -1182,54 +1249,28 @@
             if (progress >= 1) {
                 if (!isComplete) {
                     isComplete = true;
-                    statusLabel.textContent = '🐰 ¡Usagi está llegando!';
+                    // Rellenar Pikachu
+                    fillPikachu();
+                    pikaDrawn = true;
+                    flameClickable = true;
+                    statusLabel.textContent = '🕯️ ¡Toca la vela para encenderla!';
+                    statusLabel.style.color = '#b5838d';
                 }
 
-                // Dibujar a Usagi (con retraso de 0.5s después de terminar el pastel)
-                const usagiDelay = 500;
-                const usagiElapsed = now - (startTime + DRAW_DURATION + usagiDelay);
-                if (usagiElapsed > 0) {
-                    usagiProgress = Math.min(1, usagiElapsed / 2000); // 2 segundos para dibujarse
-                    if (usagiProgress >= 1 && !usagiDrawn) {
-                        usagiDrawn = true;
-                        statusLabel.textContent = '🎂 ¡Todo listo! Toca a Usagi ✨';
-                    }
-                    drawUsagi(usagiProgress, now / 1000);
-                }
-
-                // Llama (se enciende después de que Usagi esté casi listo, pero la mantenemos)
-                const flameStart = startTime + DRAW_DURATION + 1800;
-                const flameElapsed = now - flameStart;
-                if (flameElapsed > 0) {
-                    flameProgress = Math.min(1, flameElapsed / 1000);
-                    drawFlame(flameProgress, now / 100, flameFade);
-                    // Si la llama está apagada y no hay temporizador, la reavivamos después de 3s
-                    if (flameFade < 0.1 && flameOffTimer === null) {
-                        flameOffTimer = setTimeout(() => {
-                            flameFade = 1;
-                            flameOffTimer = null;
-                            statusLabel.textContent = '🕯️ ¡La llama se reavivó!';
-                            setTimeout(() => {
-                                if (usagiDrawn) statusLabel.textContent = '🎂 ¡Toca a Usagi o a la llama!';
-                            }, 1500);
-                        }, 3000);
-                    }
+                // Dibujar llama (si está encendida)
+                if (flameOn || flameFade > 0) {
+                    drawFlame(1, now / 100);
                 }
             } else {
-                // Actualizar estado del dibujo
                 const percent = Math.round(progress * 100);
                 statusLabel.textContent = `✏️ dibujando ${percent}%`;
             }
 
-            // Dibujar partículas
-            drawParticles();
-
-            // Actualizar canvas
             animFrame = requestAnimationFrame(animate);
         }
 
         // ============================================================
-        // 8. EVENTOS DE INTERACCIÓN
+        // 10. EVENTOS DE INTERACCIÓN
         // ============================================================
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -1238,35 +1279,27 @@
             const mx = (e.clientX - rect.left) * scaleX;
             const my = (e.clientY - rect.top) * scaleY;
 
-            // Verificar clic en Usagi (solo si ya está dibujado)
-            if (usagiDrawn && usagiProgress >= 1) {
-                if (isInsideUsagi(mx, my)) {
-                    spawnParticles(mx, my);
-                    statusLabel.textContent = '✨ ¡Magia de Usagi! ✨';
-                    setTimeout(() => {
-                        if (flameFade > 0.5) statusLabel.textContent = '🎂 Toca a Usagi o a la llama';
-                    }, 1200);
-                    return;
-                }
-            }
-
-            // Verificar clic en la llama (si está encendida)
-            if (flameProgress >= 1 && flameFade > 0.5) {
+            // Verificar clic en la llama (solo si está dibujado y la llama está apagada)
+            if (isComplete && flameClickable && !flameOn) {
                 if (isInsideFlame(mx, my)) {
-                    // Apagar llama con animación
-                    flameFade = 0.1; // casi apagada
-                    flameOffTimer = null; // cancelamos auto-reavivado si lo hubiera
-                    statusLabel.textContent = '💨 ¡Soplaste la vela! Se reavivará en 3s';
-                    // Programar reavivado
-                    clearTimeout(flameOffTimer);
-                    flameOffTimer = setTimeout(() => {
-                        flameFade = 1;
-                        flameOffTimer = null;
-                        statusLabel.textContent = '🕯️ ¡La llama volvió!';
-                        setTimeout(() => {
-                            if (usagiDrawn) statusLabel.textContent = '🎂 Toca a Usagi o a la llama';
-                        }, 1500);
-                    }, 3000);
+                    // Encender llama con animación
+                    flameOn = true;
+                    flameClickable = false;
+                    statusLabel.textContent = '🔥 ¡La llama se encendió!';
+                    statusLabel.style.color = '#e67e22';
+                    // Animación de fade-in
+                    let fade = 0;
+                    const fadeInterval = setInterval(() => {
+                        fade += 0.05;
+                        flameFade = Math.min(1, fade);
+                        if (flameFade >= 1) {
+                            clearInterval(fadeInterval);
+                            setTimeout(() => {
+                                statusLabel.textContent = '🎂 ¡Feliz Cumpleaños! 🎂';
+                                statusLabel.style.color = '#b5838d';
+                            }, 1000);
+                        }
+                    }, 30);
                     return;
                 }
             }
@@ -1277,19 +1310,17 @@
             if (animFrame) cancelAnimationFrame(animFrame);
             startTime = performance.now();
             isComplete = false;
-            usagiDrawn = false;
-            usagiProgress = 0;
-            flameProgress = 0;
-            flameFade = 1;
-            flameOffTimer = null;
-            particles = [];
-            statusLabel.textContent = '✏️ dibujando...';
+            pikaDrawn = false;
+            flameOn = false;
+            flameFade = 0;
+            flameClickable = false;
+            statusLabel.textContent = '✏️ dibujando pastel...';
             statusLabel.style.color = '#b5aa99';
             animate(performance.now());
         });
 
         // ============================================================
-        // 9. RESPONSIVE
+        // 11. RESPONSIVE
         // ============================================================
         function resizeCanvas() {
             const container = canvas.parentElement;
@@ -1313,7 +1344,7 @@
         window.addEventListener('beforeunload', () => {
             if (animFrame) cancelAnimationFrame(animFrame);
         });
-        console.log('🎂 Pastel + Chiikawa cargado. ¡Doble clic para reiniciar!');
+        console.log('🎂 Pastel + Pikachu cargado. ¡Toca la llama para encenderla!');
     })();
 </script>
 </body>
